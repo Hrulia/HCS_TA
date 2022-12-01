@@ -22,6 +22,8 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="MQTT.ino" />
+    <None Include="WebServer.ino" />
+    <None Include="Work_With_Serial_Data.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.ESP-01S_HCS_TA.vsarduino.h">

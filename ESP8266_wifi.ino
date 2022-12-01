@@ -1,12 +1,16 @@
 // 
 // 
 // 
+//инфо:
+/*
+onStationModeGotIP() – эта функция вызывается, когда станции присваивается IP-адрес. Присваивание IP-адреса выполняется DHCP-клиентом или при помощи функции WiFi.config().
+onStationModeDisconnected() – эта функция вызывается, когда станция отключается от WiFi-сети. Причина отключения не важна. Событие будет запущено и в том случае, если отключение будет выполнено из кода при помощи функции WiFi.disconnect() из-за слабого WiFi-сигнала, и в том случае, если мы просто отключим точка доступа.
+*/
 
 //#include <ESP8266WiFi.h>
 #include "ESP8266_wifi.h"
 
-#define DEBUGWF
-
+//#define DEBUGWF
 #ifdef DEBUGWF
 	#define DEBUG_WF(x) (Serial.print(x))
 	#define DEBUGLN_WF(x) (Serial.println(x))
@@ -20,11 +24,11 @@
 
 #define MAX_CONNECT_TIME 40000//Максимальное время на ожидание подключения к Wi-fi, в мс
 
-const char* ssid = "DIR-300";
-const char* password = "Hrulia+7";
+//const char* ssid = "DIR-300";
+//const char* password = "Hrulia+7";
 
-//const char* ssid = "HUAWEI-EE5E";//type your ssid
-//const char* password = "62429292";//type your password
+const char* ssid = "HUAWEI-EE5E";//type your ssid
+const char* password = "62429292";//type your password
 
 //const char* ssid = "MSN";//type your ssid
 //const char* password = "22222233";//type your password
@@ -53,8 +57,14 @@ int WiFi_init() {
 		DEBUGLN_WF();
 		#ifdef DEBUG_WF
 			if (WiFi.status() == WL_CONNECTED) {
-				DEBUGLN_WF("Connected. RSSI = " + String(WiFi.RSSI())+"");
-				//DEBUGLN_WF((WiFi.localIP().toString));               // Печать выданого IP адресса  
+				Serial.println("");
+				Serial.print("Connected to ");  //  "Подключились к "
+				Serial.println(ssid); 
+				Serial.print("Password  ");  //  "Пароль точки доступа"
+				Serial.println(password);
+				Serial.print("IP address: ");  //  "IP-адрес: "
+				Serial.println(WiFi.localIP());
+				DEBUGLN_WF("RSSI = " + String(WiFi.RSSI())+"");
 			}
 			else {
 				DEBUGLN_WF("Not connected! Wi-fi status: "+String(WiFi.status()));

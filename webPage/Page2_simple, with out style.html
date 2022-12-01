@@ -1,0 +1,249 @@
+<!DOCTYPE html> 
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta http-equiv="Content-Type" content='text/html; charset=utf-8'">
+<!-- <meta charset='utf-8'> -->
+<!-- <meta http-equiv="Refresh" content="1">  <!-- <meta http-equiv="Refresh" content="1; URL=https://ваш-сайт/"> -->
+
+<title>HCS Control (Tonshaevo)</title>
+<style>
+	.txtGray{text-align:right; width:50px; background:#DDD}
+	.txtWhite{text-align:right; width:50px;}
+	.listGray{width:60px; background:#DDD}
+</style>
+
+<!-- style {  -->
+<!-- html {  -->
+	<!-- font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;} -->
+<!-- body { -->
+	<!-- margin-top: 50px;} h1 {color: #444444;margin: 50px auto 30px;}  -->
+<!-- h3 { -->
+	<!-- color: #444444;margin-bottom: 50px;} -->
+<!-- .button { -->
+	<!-- display: block;width: 80px;background-color: #1abc9c;border: none;color: white;padding: 13px 30px;text-decoration: none;font-size: 25px;margin: 0px auto 35px;cursor: pointer;border-radius: 4px;} -->
+<!-- .button-on { -->
+	<!-- background-color: #1abc9c;} -->
+<!-- .button-on:active { -->
+	<!-- background-color: #16a085;} -->
+<!-- .button-off { -->
+	<!-- background-color: #34495e;} -->
+<!-- .button-off:active { -->
+	<!-- background-color: #2c3e50;} -->
+<!-- p { -->
+	<!-- font-size: 14px;color: #888;margin-bottom: 10px;} -->
+<!--#container {
+        width: 600px;
+        height: 370px;}-->
+<!-- </style> -->
+</head>
+<body>
+<a href='/'><h1>HCS Control (Tonshaevo)</h1></a>
+
+<!-- Table of temperatures -->
+<form>
+	<table cellspacing="0" cellpadding="5">						 <!-- border="1px"-->
+		<caption>Тепловые показатели системы отопления</caption>
+		<thead>
+			<th>Температура</th>
+			<th>Значение, °C</th>
+			<th></th>
+
+		</thead>
+		<tbody >
+			<tr style="background:#DDD">
+				<td>Дымовые газы</td>
+				<td>225.6</td>
+				<td><!-- <input type="text" class="txtGray" name="tempFlueGas"></input> --></td>
+				<td><!-- <button formaction="/SetFlueGas">Send --></td>
+			</tr>
+			<tr>
+				<td>ТТК подача</td>
+				<td>25.6</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>ТТК обратка</td>
+				<td>35.6</td>
+				<td></td>
+				<td></td>
+			</tr>			
+			<tr style="background:#DDD">
+				<td>Теплоакк. верх</td>
+				<td>13.6</td>
+				<td></td>
+				<td></td>
+			</tr>			
+			<tr style="background:#DDD">
+				<td>Теплоакк. низ</td>
+				<td>86.6</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Система подача</td>
+				<td>13.6</td>
+				<td></td>
+				<td></td>
+			</tr>			
+			<tr>
+				<td>Система обратка</td>
+				<td>86.6</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr style="background:#DDD">
+				<td>Электрокотел подача</td>
+				<td>13.6</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr style="background:#DDD">
+				<td>Электрокотел обратка</td>
+				<td>86.6</td>
+				<td></td>
+				<td></td>
+			</tr>		
+			<tr>
+				<td>Зал</td>
+				<td>13.6</td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Большая спальня</td>
+				<td>86.6</td>
+				<td></td>
+				<td></td>
+			</tr>		
+			<tr>
+				<td>Улица</td>
+				<td>13.6</td>
+				<td></td>
+				<td></td>
+			</tr>			
+		</tbody>
+	</table>
+</form>
+
+<!-- Table of parametrs -->
+<form style="position:absolute; top:80px;left:360px; height:500px; width:600px">
+	<table cellspacing="0" cellpadding="5">						 <!-- border="1px"-->
+		<caption>Heating system parameters</caption>
+		<thead>
+			<th>Parametr</th>
+			<th>Value</th>
+			<th colspan="2">Set new value</th>
+			<th></th>
+			<th></th>
+		</thead>
+		<tbody >
+			<tr style="background:#DDD">
+				<td>Boiler pump mode</td>
+				<td></td>
+				<td><select name="BoilerPumpMode" class="listGray" required>
+				  <option>Auto</option>
+				  <option>ON</option>
+				  <option>OFF</option>
+				</td>
+				<td><button formaction="/BoilerPumpMode">Send</td>
+			</tr>
+			<tr style="background:#DDD">
+				<td>System pump mode</td>
+				<td></td>
+				<td><select name="SystemPumpMode"class="listGray" required>
+				  <option>Auto</option>
+				  <option>ON</option>
+				  <option>OFF</option>
+				</td>
+				<td><button formaction="/SystemPumpMode">Send</td>
+			</tr>
+			<tr style="background:#DDD">
+				<td>System T regulation mode</td>
+				<td></td>
+				<td><select name="SysTempControlMode" class="listGray" required>
+				  <option>My</option>
+				  <option>PID</option>
+				</td>
+				<td><button formaction="/SysTempControlMode">Send</td>
+			</tr>	
+			<tr>
+				<td>Door air intake in stove</td>
+				<td></td>
+				<td><select name="DoorAir" style="width:60px" required>
+				  <option>Auto</option>
+				  <option>Open</option>
+				  <option>Close</option>
+				</td>
+				<td><button formaction="/DoorAir">Send</td>
+			</tr>	
+			<tr>
+				<td>Parametr 1</td>
+				<td></td>
+				<td><select name="Parametr1" style="width:60px" required>
+				  <option>1</option>
+				  <option>2</option>
+				  <option>3</option>
+				</td>
+				<td><button formaction="/Parametr1">Send</td>
+			</tr>	
+			<tr>
+				<td>Parametr 2</td>
+				<td></td>
+				<td><select name="Parametr2" style="width:60px" required>
+				  <option>1</option>
+				  <option>2</option>
+				  <option>3</option>
+				</td>
+				<td><button formaction="/Parametr2">Send</td>
+			</tr>				
+			
+		</tbody>
+	</table>
+</form>
+
+<!-- Отправка данных на сервер 
+<form action="http://foo.com" method="get">
+  <div>
+    <label for="say">What greeting do you want to say?</label>
+    <input name="say" id="say" value="Hi">
+  </div>
+  <div>
+    <label for="to">Who do you want to say it to?</label>
+    <input name="to" id="to" value="Mom">
+  </div>
+  <div>
+    <button>Send my greetings</button>
+  </div>
+</form>
+-->
+
+<!-- ссылка по стилю как кнопка, позволяет осуществить переход по нужному адресу
+<a class="button button-on" href="/led1on">ON</a> -->
+
+<!-- ссылка, с кнопкой в теге, позволяет осуществить переход по нужному адресу (междукнопками неразрывный пробел - спец. символ
+<p>LED state <a href=\"LedON\"><button>ON</button></a>&nbsp;<a href=\"LedOFF\"><button>OFF</button></a></p> -->
+
+<div id="container" style="position:absolute; top: 80px;left: 730px; height: 500px; width:600px"></div>
+
+<script src="https://cdn.anychart.com/js/latest/anychart-bundle.min.js"></script>
+<script>
+  // AnyChart code here
+  anychart.onDocumentLoad(function() {
+	// create data
+	var data = [[1, 10],[2, 12],[3, 18],[4, 11],[5, 9],[6, 10],[7, 12],[8, 18],[9, 11],[10,9]];
+	// create a chart
+	chart = anychart.line();
+	// create a line series and set the data
+	var series = chart.line(data);
+	 // set chart title
+	chart.title("AnyChart Basic Sample");
+	// set the container id
+	chart.container("container");
+	// initiate drawing the chart
+	chart.draw();
+});
+</script>
+</body>
+</html>
