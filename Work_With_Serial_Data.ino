@@ -49,12 +49,13 @@ void parseSerialCmd() {
 			command = serialReq.substring(pBegin);
 			parameter = "";
 		}
+	
+	//============================================================================
+	//============ Разбор поступивших команд =============
 
-		//============ Разбор поступивших команд =============
-
-		//***** ?mega
-		if (command == F("mega")) {
-			//MEGA прислала подтверждение, что работает
+//**********
+// ?mega
+		if (command == F("mega")) {//MEGA прислала подтверждение, что работает
 			if (parameter == F("1")) {
 				mega = MEGA_ON;
 				megaTimer = millis(); //сбросим таймер выявление зависания модуля MEGA
@@ -62,11 +63,10 @@ void parseSerialCmd() {
 			}
 		}
 
-		//***** ?sendtempХ              ?sendtemp=1.23;5.78;33,33;7,77
+//**********
+// ?sendtempХ              ?sendtemp=1.23;5.78;33,33;7,77
 		else if (command.substring(0, 8) == F("sendtemp")) {
-
 			//  !???? Ошибка в этой функции!!! Не понятно как обрабатывает несколько значений!!!
-
 
 			/*  Эта процедура обрабатывает сразу все температуры одной строкой с разделителем';'
 			/*int iparam2 = parameter2.toFloat();
@@ -87,18 +87,21 @@ void parseSerialCmd() {
 			DEBUGLN("temp " + command.substring(8) + ": " + String(temperatures[index]) + "");
 		}
 
-		// ?test 
+//**********
+// ?test 
 		else if (command == F("test")) {//Команда для проверки работы функции обработки в ESP													// ?test
 			Serial.println("Put command test");
 		}
 
-		//* ?reqestrssi
+//**********
+// ?reqestrssi
 		else if (command == F("reqestrssi")) {//Запрос уровня сигнала wi-fi
 			Serial.print("?sendrssi=");
 			Serial.println((long)WiFi.RSSI());
 		}
 
-		// ?sendGTargetTemp
+//**********
+// ?sendGTargetTemp
 		else if (command == F("sendGTargetTemp")) {//Передача от MEGA значения глобальной целевой температуры системы, без учета расписания
 			/*DEBUGLN*/Serial.println("The global target temperature is obtained: " + parameter);
 			//Отправляем на сервер MQTT в field3 (GTargetTemp)
@@ -115,8 +118,8 @@ void parseSerialCmd() {
 			mqttPublish(writeChannelID, dataToPublish, fieldsToPublish);
 		}
 	}
-} // parseSerialCmd()
-	//============================================================================
+}
+
 
 
 

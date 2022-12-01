@@ -48,7 +48,7 @@ void handle_BoilerPumpMode() {
 	webServer.send(200, "text/html", prepareHtmlPage(nullptr, true));
 }
 void handle_SystemPumpMode() {
-	Serial.println("handle_BoilerPumpMode");
+	Serial.println("handle_SystemPumpMode");
 	webServer.send(200, "text/html", prepareHtmlPage(false, true));
 }
 void handle_SysTempControlMode() {

@@ -155,7 +155,6 @@ unsigned long timeBlink = millis();
 
 /*********************************************/
 void loop() {
-
 	// Web-server listen for HTTP requests from clients
 	checkWebClient();
 
@@ -168,7 +167,6 @@ void loop() {
 	//Запрос данных о всех температурах из модуля MEGA
 	if (cycleRequestTemperature.check()) {
 		RequestTemperature();
-		// перезапуск таймера вызова функции.
 		cycleRequestTemperature.reStart();
 	}
 									////Запрос данных о текущей целевой температуре с учетом расписания
@@ -182,18 +180,17 @@ void loop() {
 	//отправки данных о температуре на сайт ThingSpeak (не чаще раза в 15 секунд)
 	if (cycleSendingDataToThingSpeak.check()) {
 		ThingSpeakWriteItems(temperatures);
-		// перезапуск таймера вызова функции.
 		cycleSendingDataToThingSpeak.reStart();
 	}
 
 	// отпарвки команды своего присутствия на Mega через Serial
 	if (cycleCheckMegaAndESP.check()) {
-		//Проверка нормального функционирования модуля MEGA.
-		checkMegaAndESP();  
-		// перезапуск таймера вызова функции.
+		checkMegaAndESP();  		//Проверка нормального функционирования модуля MEGA.
 		cycleCheckMegaAndESP.reStart();
 	}
 }
+
+
 
 /*******************************************************************************************/
 
@@ -207,8 +204,6 @@ void RequestTemperature() {
 //void RequestTargetTemperature() {
 //	Serial.println("?reqestTargetTemp");
 //}
-
-
 
 //Контроль работы модуля mega и отправка сигнала своего ESP присутствия 
 void checkMegaAndESP() {
