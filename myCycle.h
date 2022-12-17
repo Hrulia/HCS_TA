@@ -4,7 +4,10 @@
 #define MS_500       500
 #define MS_01S      1000
 #define MS_02S      2000
+#define MS_03S      3000
+#define MS_04S      4000
 #define MS_05S      5000
+#define MS_06S      6000
 #define MS_10S     10000
 #define MS_13S     13000
 #define MS_17S     17000

@@ -120,15 +120,12 @@ void parseSerialCmd() {
 		//**********
 		// ?sendSystemParameters=XYZK
 		else if (command == F("sendSystemParameters")) {//Передача от MEGA значения глобальной целевой температуры системы, без учета расписания
-			//Serial.println("Received frame 'sendSystemParameters' with parameters:" + parameter);
-			SysParametrs[0] = parameter.substring(0,1).toInt();
-			SysParametrs[1] = parameter.substring(1,2).toInt();
-			SysParametrs[2] = parameter.substring(2,3).toInt();
-			SysParametrs[3] = parameter.substring(3,4).toInt();
-
-			SysParametrs[4] = parameter.substring(4,5).toInt();
-			SysParametrs[5] = parameter.substring(5,6).toInt();
-			
+			/*DEBUGLN*/Serial.println("Получена посылка sendSystemParameters с параметрами:" + parameter);
+			SysParametrs[0] = parameter[0];
+			SysParametrs[1] = parameter[1];
+			SysParametrs[2] = parameter[2];
+			SysParametrs[3] = parameter[3];
+			Serial.println("сохранены системные параметры:"); Serial.println(String(SysParametrs[0])+ SysParametrs[1]+SysParametrs[2]+SysParametrs[3]);
 		}
 	}
 }

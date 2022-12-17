@@ -24,6 +24,12 @@
     <None Include="MQTT.ino" />
     <None Include="WebServer.ino" />
     <None Include="Work_With_Serial_Data.ino" />
+    <None Include="..\HCS_TA\Bugs.docx">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\HCS_TA\Echange protocol.docx">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.ESP-01S_HCS_TA.vsarduino.h">
@@ -39,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MQTT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="__vm\.HCS_TA_ESP8266.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

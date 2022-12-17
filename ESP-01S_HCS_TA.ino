@@ -36,7 +36,7 @@ https://wikihandbk.com/wiki/ESP8266:Модули/Плата_HUZZAH_ESP8266_от_Adafruit //сл
 EasyIoT The easy way to build Internet of Things: https://iot-playground.com/
 Serial.setDebugOutput(true);  //включение вывода диагностической информации
 WiFi.printDiag(Serial);       //вывод диагностики в сериал
-
+//server.setNoDelay(true); // отключение алгоритма Нейгла
 */
 
 //=====================================================
@@ -46,9 +46,6 @@ WiFi.printDiag(Serial);       //вывод диагностики в сериал
 // подробнее тут: https://esp8266.ru/forum/threads/zachem-polzovatsja-kostylem-softserial-kogda-u-esp8266-dva-apparatnyx-uart.4749/
 //
 
-//#include <ESP8266WebServerSecure.h>
-//#include <ESP8266WebServer-impl.h>
-//#include "HCS_server.h"
 #include <PubSubClient.h>
 #include <ESP8266WiFi.h> 
 #include <ESP8266WebServer.h>
@@ -58,7 +55,7 @@ WiFi.printDiag(Serial);       //вывод диагностики в сериал
 #include "ESP8266_wifi.h"
 
 //включение отладки в основном модуле программы
-#define DEBUG_MAIN
+//#define DEBUG_MAIN
 
 #ifdef DEBUG_MAIN
 	#define DEBUG(x) (Serial.print(x))
@@ -78,19 +75,33 @@ WiFi.printDiag(Serial);       //вывод диагностики в сериал
 #define MAX_SERIAL_REQ  50 //
 #define NUMBER_OF_DS18B20 18 //Number of sensor DS18B20 (16) + датчик температуры дыма (1) + текущая целевая температура (1)
 
-
+//Перечисления для параметров работы системы
+enum sysParam{ ERR, ON, OFF, AUTO, OPEN, CLOSE, MYALG, PID};
+String sysParamString[8] = { "Err","On", "Off", "Auto", "Open", "Close", "myAlg", "PID" }; //отображает имена элементов sysParam
 
 /* настройка пинов */
 //#define PIN_RESET_MEGA D1 //пин генерации сигнала сброса для модуля MEGA
 
 /* Initial Timers */
 myCycle cycleRequestTemperature(MS_05S, true);			// 1м, 5с запрос температуры
+myCycle cycleRequestSystemParameters(MS_06S, true);  // запрос параметров работы системы.
 //myCycle cycleRequestTargetTemperature(120000, true);			// 2м запрос текущей целевой температуры с учетом суточного расписания
-myCycle cycleSendingDataToThingSpeak(MS_05M, true);	// 5м цикл отправки данных о температуре на сайт IoT
+myCycle cycleSendingDataToThingSpeak(MS_01M, true);	// 5м цикл отправки данных о температуре на сайт IoT
 myCycle cycleCheckMegaAndESP(MS_03M, true);				//3мин цикл отправки в mega через serial команды своего присутствия: ?esp=1
 
-//Массив температур датчиков DS18B20 
-float temperatures[(NUMBER_OF_DS18B20)]; 
+
+//global variables
+float temperatures[(NUMBER_OF_DS18B20)];	//Массив температур датчиков DS18B20 
+int SysParametrs[6];											//arrey system parameters and variables
+/* 
+[0] - BoilerPumpMode				//1 - on, 2 - off, 3 - auto
+[1] - SystemPumpMode				//1 - on, 2 - off, 3 - auto
+[2] - SysTempControlMode		//6 – мой алгоритм регулирования, 7 - PID регулятор
+[3] - DoorAirMode						//4 - open, 5 - close, 3 - auto
+[4] - reserved
+[5] - reserved
+
+*/
 
 /* Watch dog for Mega */
 // mega partner. Флаги состояния подключенного модуля Mega
@@ -149,7 +160,7 @@ void setup() {
 	
 	//Начальное значение таймера проверки состояния подключенного модуля Mega
 	byte mega = MEGA_OFF;
-	megaTimer = millis(); 
+	megaTimer = millis();
 }
 unsigned long timeBlink = millis();
 
@@ -188,6 +199,12 @@ void loop() {
 		checkMegaAndESP();  		//Проверка нормального функционирования модуля MEGA.
 		cycleCheckMegaAndESP.reStart();
 	}
+
+	//запрос параметров работы системы отопления
+	if (cycleRequestSystemParameters.check()) {
+		RequestSystemParameters(); //запро параметров работы системы
+		cycleRequestSystemParameters.reStart();
+	}
 }
 
 
@@ -221,3 +238,8 @@ void checkMegaAndESP() {
 		//digitalWrite(PIN_RESET_MEGA, HIGH);
 	}
 }	// cheсkMegaAndESP() 
+
+//запрос к меге на передачу значений внутренних параметров 
+void RequestSystemParameters() {
+	Serial.println("?getSystemParameters");
+}

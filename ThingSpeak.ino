@@ -39,6 +39,7 @@ int ThingSpeakWriteField(int item, float value, int channelNumber, char* writeAP
 
 //Запись нескольких значений  о температурах на сайт ThingSpeak одновременно
 int ThingSpeakWriteItems(float *value ) {
+	///Serial.println("********************************************************************************");
 	//{ 0x28, 0x18, 0x07, 0x40, 0x04, 0x00, 0x00, 0xCB },  // [0]- t1, подача cистемы
 	//{ 0x28, 0x4D, 0xF7, 0xBF, 0x04, 0x00, 0x00, 0x43 },  // [1]- t2, обратка системы
 	//{ 0x28, 0x18, 0x07, 0x40, 0x04, 0x00, 0x00, 0xCB },  // [2]- t3, отвод трехходового крана ТТК
