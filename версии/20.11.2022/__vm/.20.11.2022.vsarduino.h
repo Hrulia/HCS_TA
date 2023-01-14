@@ -16,10 +16,7 @@
 #define __ESP8266_ESP8266__
 #define __ets__
 #define ICACHE_FLASH
-#define _GNU_SOURCE
-#define ESP8266
-#define MMU_IRAM_SIZE 0x8000
-#define MMU_ICACHE_SIZE 0x8000
+#define NEW_OOM_ABORT
 #define NONOSDK22x_190703 1
 #define F_CPU 80000000L
 #define LWIP_OPEN_SRC
@@ -29,8 +26,9 @@
 #define ARDUINO 108019
 #define ARDUINO_ESP8266_GENERIC
 #define ARDUINO_ARCH_ESP8266
-#define LED_BUILTIN 14
+#define LED_BUILTIN 2
 #define FLASHMODE_DIO
+#define ESP8266
 #define __cplusplus 201103L
 #undef __cplusplus
 #define __cplusplus 201103L
@@ -121,7 +119,5 @@ typedef long __PTRDIFF_TYPE__;
 #include "ESP8266_wifi.ino"
 #include "MQTT.ino"
 #include "ThingSpeak.ino"
-#include "WebServer.ino"
-#include "Work_With_Serial_Data.ino"
 #endif
 #endif

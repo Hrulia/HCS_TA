@@ -10,7 +10,7 @@ onStationModeDisconnected() – эта функция вызывается, когда станция отключается 
 //#include <ESP8266WiFi.h>
 #include "ESP8266_wifi.h"
 
-//#define DEBUGWF
+#define DEBUGWF
 #ifdef DEBUGWF
 	#define DEBUG_WF(x) (Serial.print(x))
 	#define DEBUGLN_WF(x) (Serial.println(x))
@@ -24,11 +24,11 @@ onStationModeDisconnected() – эта функция вызывается, когда станция отключается 
 
 #define MAX_CONNECT_TIME 40000//Максимальное время на ожидание подключения к Wi-fi, в мс
 
-const char* ssid = "DIR-300";
-const char* password = "Hrulia+7";
+//const char* ssid = "DIR-300";
+//const char* password = "Hrulia+7";
 
-//const char* ssid = "HUAWEI-EE5E";//type your ssid
-//const char* password = "62429292";//type your password
+const char* ssid = "HUAWEI-EE5E";//type your ssid
+const char* password = "62429292";//type your password
 
 //const char* ssid = "MSN";//type your ssid
 //const char* password = "22222233";//type your password
@@ -72,5 +72,6 @@ int WiFi_init() {
 			}
 		#endif
 	}
+	return 0;
 } //end WiFi_init
 

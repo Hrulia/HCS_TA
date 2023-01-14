@@ -50,14 +50,14 @@ void checkWebClient() {
 
 
 void handle_OnConnect() {
-	Serial.println("handle_OnConnect");
+	///Serial.println("handle_OnConnect");
 	webServer.send(200, "text/html", prepareHtmlPage(temperatures, SysParametrs));
 }
 
 void handle_BoilerPumpMode() {
 	//Отправка команды установки режима на модуль Mega
 	if (webServer.arg(0) == "Auto") {
-		Serial.println("?setBoilerPumpMode=3");
+		Serial.println(F("?setBoilerPumpMode=3"));
 	}
 	else if (webServer.arg(0) == "On"){
 		Serial.println("?setBoilerPumpMode=1");
@@ -69,7 +69,7 @@ void handle_BoilerPumpMode() {
 }
 
 void handle_SystemPumpMode() {
-	Serial.println("handle_SystemPumpMode");
+	///Serial.println("handle_SystemPumpMode");
 	//Отправка команды установки режима на модуль Mega
 	if (webServer.arg(1) == "Auto") {
 		Serial.println("?setSystemPumpMode=3");
@@ -84,28 +84,28 @@ void handle_SystemPumpMode() {
 }
 
 void handle_SysTempControlMode() {
-	Serial.println("handle_SysTempControlMode");
+	///Serial.println("handle_SysTempControlMode");
 
 	webServer.send(200, "text/html", prepareHtmlPage(temperatures, SysParametrs));
 }
 void handle_DoorAir() {
-	Serial.println("handle_DoorAir");
+	///Serial.println("handle_DoorAir");
 
 	webServer.send(200, "text/html", prepareHtmlPage(temperatures, SysParametrs));
 }
 void handle_Parametr1() {
-	Serial.println("handle_Parametr1");
+	///Serial.println("handle_Parametr1");
 	
 	webServer.send(200, "text/html", prepareHtmlPage(temperatures, SysParametrs));
 }
 void handle_Parametr2() {
-	Serial.println("handle_Parametr2");
+	///Serial.println("handle_Parametr2");
 	
 	webServer.send(200, "text/html", prepareHtmlPage(temperatures, SysParametrs));
 }
 
 void handle_AutoRefresh() {
-	Serial.println("handle_AutoRefresh");
+	///Serial.println("handle_AutoRefresh");
 	webServer.send(200, "text/html", prepareHtmlPage(temperatures, SysParametrs, true));
 }
 
@@ -114,7 +114,7 @@ String prepareHtmlPage(float temperature[], int sysParam[], bool refresh){
 	static bool refreshPage=false; //флаг автоматического обновления страницы с переходом на главную
 	String htmlPage;	
 
-	if (refresh) { refreshPage = !refreshPage; Serial.println("TRUE"); }
+	if (refresh) { refreshPage = !refreshPage; /*Serial.println("TRUE");*/ }
 
 	/*htmlPage.reserve(7000); */              // prevent ram fragmentation
 /*
@@ -136,7 +136,7 @@ String prepareHtmlPage(float temperature[], int sysParam[], bool refresh){
 		// в HTML5 в тег meta достаточно добавить <meta charset="utf-8"> вместо <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		//"<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>");
 		"<meta charset='utf-8'>");
-		refreshPage ? htmlPage += "<meta http-equiv='Refresh' content='5; URL=/'>" :true;
+		refreshPage ? htmlPage += "<meta http-equiv='Refresh' content='5; URL=/'>" :"";
 		htmlPage +=F("<title>HCS Control(Tonshaevo)</title>"
 		"<style>"
 		".txtGray{text-align:right; width:50px; background:#DDD}"
@@ -347,8 +347,8 @@ String prepareHtmlPage(float temperature[], int sysParam[], bool refresh){
 		"<iframe width='450' height='260' style='position:absolute;top:280px;left:750px;border:1px solid #cccccc;' src='https://thingspeak.com/channels/1287359/charts/2?bgcolor=%23ffffff&color=%23d62020&days=2&dynamic=true&results=80&title=%D0%9F%D0%BE%D0%B4%D0%B0%D1%87%D0%B0+%D1%81%D0%B8%D1%81%D1%82%D0%B5%D0%BC%D0%B0&type=line&xaxis=%D0%92%D1%80%D0%B5%D0%BC%D1%8F%2C+%D1%87&yaxis=%D0%A2%D0%B5%D0%BC%D0%BF%D0%B5%D1%80%D0%B0%D1%82%D1%83%D1%80%D0%B0%2C+%C2%B0%D0%A1&yaxismax=60&yaxismin=25'></iframe>"
 		"</body>"
 		"</html>");
-			Serial.println("STOP");
-			Serial.println(htmlPage.length());
+			///Serial.println("STOP");
+			Serial.print("Length HTML string = "); Serial.println(htmlPage.length());
 	return htmlPage;
 }
 

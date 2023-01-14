@@ -111,9 +111,10 @@ void MQTTloop() {
 */
 void mqttSubscriptionCallback(char* topic, byte* payload, unsigned int mesLength) {
 	//сохраняем сообщение, полученное с сервера брокера во временную переменную.
+	//char r[22];
 	char p[mesLength + 1];
 	memcpy(p, payload, mesLength);
-	p[mesLength] = NULL; 
+	//p[mesLength] = NULL; 
 
 	DEBUGLN_MQTT("New message in topic. Length: " + String(mesLength));
 	DEBUGLN_MQTT("Topic " + String(topic));
@@ -135,7 +136,7 @@ void mqttSubscriptionCallback(char* topic, byte* payload, unsigned int mesLength
 	//на запись новой целевой температуры
 	if (f>=20 && f<=26)
 	{
-		delay(15000);
+		/*/////убрал, когда искал причину зависаний  */ delay(15000);
 		Serial.println("?SetGTargetTemp=" + String(f));
 		DEBUGLN_MQTT("Target temperature sent to MEGA");
 	}
@@ -164,7 +165,7 @@ void mqttConnect()
 			// See https://pubsubclient.knolleary.net/api.html#state for the failure code explanation.
 			DEBUGLN_MQTT(mqttClient.state());
 			DEBUGLN_MQTT(F(" Will try again in 5 seconds"));
-			delay(5000);
+			/*//убрал, когда искал причину зависаний */ delay(5000);
 		}
 	}
 }

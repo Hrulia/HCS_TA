@@ -90,7 +90,7 @@ void parseSerialCmd() {
 //**********
 // ?test 
 		else if (command == F("test")) {//Команда для проверки работы функции обработки в ESP													// ?test
-			Serial.println("Put command test");
+			Serial.println(F("Put command test"));
 		}
 
 //**********
@@ -103,7 +103,7 @@ void parseSerialCmd() {
 //**********
 // ?sendGTargetTemp
 		else if (command == F("sendGTargetTemp")) {//Передача от MEGA значения глобальной целевой температуры системы, без учета расписания
-			/*DEBUGLN*/Serial.println("The global target temperature is obtained: " + parameter);
+			///*DEBUGLN*/Serial.println("The global target temperature is obtained: " + parameter);
 			//Отправляем на сервер MQTT в field3 (GTargetTemp)
 			dataToPublish[2] = parameter.toFloat();
 			fieldsToPublish[0] = 0; //field1 will be rec

@@ -35,6 +35,7 @@ int ThingSpeakWriteField(int item, float value, int channelNumber, char* writeAP
 			DEBUG("Problem writing to channel "+ String(item)+", HTTP error " + String(httpCode));
 		}
 	#endif
+		return 0;
 }
 
 //Запись нескольких значений  о температурах на сайт ThingSpeak одновременно
@@ -83,5 +84,5 @@ int ThingSpeakWriteItems(float *value ) {
 		DEBUGLN("Problem updat ThingSpeak, HTTP error, code " + String(httpCode)+"");
 	}
 #endif
-
+	return 0;
 }

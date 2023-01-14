@@ -17,7 +17,6 @@
   <ItemGroup>
     <None Include="ESP-01S_HCS_TA.ino" />
     <None Include="ESP8266_wifi.ino" />
-    <None Include="ThingSpeak.ino" />
     <None Include="..\HCS_TA\Heating control system with TA.docx">
       <Filter>Resource Files</Filter>
     </None>
@@ -30,6 +29,7 @@
     <None Include="..\HCS_TA\Echange protocol.docx">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="ThingSpeak.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.ESP-01S_HCS_TA.vsarduino.h">

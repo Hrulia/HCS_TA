@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ESP-01S_HCS_TA", "ESP-01S_H
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PubSubClient", "Z:\Arduino SketchBook location\libraries\PubSubClient\PubSubClient.vcxitems", "{2B30243B-C355-49BC-9FD1-BD4C84F003B5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ESP8266WebServer", "C:\Users\Sergey\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.7.4\libraries\ESP8266WebServer\ESP8266WebServer.vcxitems", "{81E7C5BD-4301-4B0B-ABC7-772E8F24E7AF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ESP8266WebServer", "C:\Users\Sergey\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\3.0.2\libraries\ESP8266WebServer\ESP8266WebServer.vcxitems", "{6959D72E-7EF6-4DE8-9F95-D649D7B69E0F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

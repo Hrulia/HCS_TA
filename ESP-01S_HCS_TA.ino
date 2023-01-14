@@ -68,10 +68,6 @@ WiFi.printDiag(Serial);       //вывод диагностики в сериал
 #endif // DEBUG_MAIN
 
 
-/* Work with UART */
-//#define MESS(mess) (Serial.print("?esplog="+String(mess))) // Командa логирования модулем mega сообщения от esp
-//////задаем интерфейс, через который отправляем команды модулю MEGA
-////#define UART_TO_MEGALN(x) (Serial.println(x))
 #define MAX_SERIAL_REQ  50 //
 #define NUMBER_OF_DS18B20 18 //Number of sensor DS18B20 (16) + датчик температуры дыма (1) + текущая целевая температура (1)
 
@@ -83,16 +79,16 @@ String sysParamString[8] = { "Err","On", "Off", "Auto", "Open", "Close", "myAlg"
 //#define PIN_RESET_MEGA D1 //пин генерации сигнала сброса для модуля MEGA
 
 /* Initial Timers */
-myCycle cycleRequestTemperature(MS_05S, true);			// 1м, 5с запрос температуры
-myCycle cycleRequestSystemParameters(MS_06S, true);  // запрос параметров работы системы.
+myCycle cycleRequestTemperature(120000, true);			// 2м, 1м, 5с(mega зависала, видимо от частых запросов и переполнения буфера) 30 запрос температуры
+myCycle cycleRequestSystemParameters(MS_03M, true);  // 3м, 30c, запрос параметров работы системы.
 //myCycle cycleRequestTargetTemperature(120000, true);			// 2м запрос текущей целевой температуры с учетом суточного расписания
-myCycle cycleSendingDataToThingSpeak(MS_01M, true);	// 5м цикл отправки данных о температуре на сайт IoT
+myCycle cycleSendingDataToThingSpeak(MS_05M, true);	// 5м цикл отправки данных о температуре на сайт IoT
 myCycle cycleCheckMegaAndESP(MS_03M, true);				//3мин цикл отправки в mega через serial команды своего присутствия: ?esp=1
 
 
 //global variables
 float temperatures[(NUMBER_OF_DS18B20)];	//Массив температур датчиков DS18B20 
-int SysParametrs[6];											//arrey system parameters and variables
+int SysParametrs[6];											//arrey system (in MEGA) parameters and variables
 /* 
 [0] - BoilerPumpMode				//1 - on, 2 - off, 3 - auto
 [1] - SystemPumpMode				//1 - on, 2 - off, 3 - auto
@@ -120,7 +116,7 @@ extern float dataToPublish[8];    // Holds your field data.
 /*****************************************************/
 void setup() {
 	//Serial.setRxBufferSize(500); // по умолчанию в ESP 256 Байт
-	Serial.begin(115200);
+	Serial.begin(9600);
 	//Serial.swap(); // GPIO15/D8 (TX) и GPIO13/D7 (RX)
 	//Serial.setTimeout(250);
 
@@ -156,7 +152,7 @@ void setup() {
 	//digitalWrite(PIN_RESET_MEGA, HIGH);
 
 	//моргание диодиком на плате, что бы видеть, что плата не зависла
-	//pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(LED_BUILTIN, OUTPUT);
 	
 	//Начальное значение таймера проверки состояния подключенного модуля Mega
 	byte mega = MEGA_OFF;
@@ -214,7 +210,7 @@ void loop() {
 //Запрос информации о температуре с модуля MEGA
 void RequestTemperature() {
 	//запрос к меге на передачу всех значений температуры 
-	Serial.println("?reqesttemp=A");
+	Serial.println(F("?reqesttemp=A"));
 }
 
 ////Запрос информации о текущей целевой температуре с учетом расписания с модуля MEGA
@@ -228,7 +224,7 @@ void checkMegaAndESP() {
 	Serial.println(F("?esp=1"));
 
 	//Проверяем как долго от модуля mega не поступала информации о его присутствии. Не реже раза в 3 минуты
-	if ((millis() - megaTimer) > 180000) {
+	if ((millis() - megaTimer) > 180000UL) {
 		mega = MEGA_OFF; 
 		megaTimer = millis();
 		//делаем reset MEGA
@@ -241,5 +237,5 @@ void checkMegaAndESP() {
 
 //запрос к меге на передачу значений внутренних параметров 
 void RequestSystemParameters() {
-	Serial.println("?getSystemParameters");
+	Serial.println(F("?getSystemParameters"));
 }
