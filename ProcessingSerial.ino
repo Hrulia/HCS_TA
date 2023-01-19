@@ -1,3 +1,13 @@
+//=====================================================
+// Для обмена по UART с модулем MEGA на данный момент пока используется тот же Serial1, который идет на USB.
+// но у esp8266 есть еще один UART(фактически это просто вывод того же uart на другие ножки мк), вот только буфер у них общий, поэтому нужно переключаться с одного на другой 
+// функцией Serial.swap() и при этом, на всякий случай, еще чистим буфер функцией Serial.flush() 
+// подробнее тут: https://esp8266.ru/forum/threads/zachem-polzovatsja-kostylem-softserial-kogda-u-esp8266-dva-apparatnyx-uart.4749/
+//
+
+
+
+
 //=============================== -- Обработка поступившей по UART информации от модуля MEGA -- ===========================
 bool sFlag = true;
 String serialReq = "";
@@ -90,7 +100,7 @@ void parseSerialCmd() {
 //**********
 // ?test 
 		else if (command == F("test")) {//Команда для проверки работы функции обработки в ESP													// ?test
-			Serial.println("Put command test");
+			Serial.println(F("Put command test"));
 		}
 
 //**********
@@ -103,7 +113,7 @@ void parseSerialCmd() {
 //**********
 // ?sendGTargetTemp
 		else if (command == F("sendGTargetTemp")) {//Передача от MEGA значения глобальной целевой температуры системы, без учета расписания
-			/*DEBUGLN*/Serial.println("The global target temperature is obtained: " + parameter);
+			///*DEBUGLN*/Serial.println("The global target temperature is obtained: " + parameter);
 			//Отправляем на сервер MQTT в field3 (GTargetTemp)
 			dataToPublish[2] = parameter.toFloat();
 			fieldsToPublish[0] = 0; //field1 will be rec
@@ -120,12 +130,15 @@ void parseSerialCmd() {
 		//**********
 		// ?sendSystemParameters=XYZK
 		else if (command == F("sendSystemParameters")) {//Передача от MEGA значения глобальной целевой температуры системы, без учета расписания
-			/*DEBUGLN*/Serial.println("Получена посылка sendSystemParameters с параметрами:" + parameter);
-			SysParametrs[0] = parameter[0];
-			SysParametrs[1] = parameter[1];
-			SysParametrs[2] = parameter[2];
-			SysParametrs[3] = parameter[3];
-			Serial.println("сохранены системные параметры:"); Serial.println(String(SysParametrs[0])+ SysParametrs[1]+SysParametrs[2]+SysParametrs[3]);
+			//Serial.println("Received frame 'sendSystemParameters' with parameters:" + parameter);
+			SysParametrs[0] = parameter.substring(0,1).toInt();
+			SysParametrs[1] = parameter.substring(1,2).toInt();
+			SysParametrs[2] = parameter.substring(2,3).toInt();
+			SysParametrs[3] = parameter.substring(3,4).toInt();
+
+			SysParametrs[4] = parameter.substring(4,5).toInt();
+			SysParametrs[5] = parameter.substring(5,6).toInt();
+			
 		}
 	}
 }

@@ -6,13 +6,13 @@
 // https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WebServer
 // 
 
-#include <ESP8266WebServer.h>
+//#include <ESP8266WebServer.h>
 
 String prepareHtmlPage(float temperature[], int sysParam[], bool refresh=false);
 
 
 String webPage = ""; 
-uint16_t servPort = 80;
+const uint16_t servPort = 80;
 //WiFiServer server(80); //arduino, поддерживает несколько клиентов
 ESP8266WebServer webServer(servPort); //only support one simultaneous client
 
@@ -51,7 +51,10 @@ void checkWebClient() {
 
 void handle_OnConnect() {
 	///Serial.println("handle_OnConnect");
-	webServer.send(200, "text/html", prepareHtmlPage(temperatures, SysParametrs));
+	webServer.setContentLength(CONTENT_LENGTH_UNKNOWN);
+	webServer.send(200, "text/html", ""); //------- посылаем главную веб-страницу
+	webServer.sendContent_P(prepareHtmlPage(temperatures, SysParametrs).c_str()); //сделать ее через cStr и поместить в PROGMAN эта функция выводит инфу из прогман
+	/*webServer.send(200, "text/html", prepareHtmlPage(temperatures, SysParametrs));*/
 }
 
 void handle_BoilerPumpMode() {
@@ -116,7 +119,7 @@ String prepareHtmlPage(float temperature[], int sysParam[], bool refresh){
 
 	if (refresh) { refreshPage = !refreshPage; /*Serial.println("TRUE");*/ }
 
-	/*htmlPage.reserve(7000); */              // prevent ram fragmentation
+	htmlPage.reserve(4500);              // prevent ram fragmentation
 /*
 	htmlPage = F("HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/html\r\n"

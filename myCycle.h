@@ -16,6 +16,7 @@
 #define MS_01M     60000
 #define MS_03M    180000
 #define MS_05M    300000
+#define MS_30M    180000
 #define MS_01H   3600000
 #define MS_06H  21600000
 #define MS_12H  43200000
