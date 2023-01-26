@@ -4,6 +4,16 @@
  Author:	Sergey
 */
 
+/*//!!!! как нужно добавлять файлы cpp и h в проект  https://arduinoprosto.ru/q/61634/neskolko-faylov-ino-v-odnom-eskize
+
+в *.h - файле:
+	extern byte Test;
+
+в *.cpp - файле:
+	byte Test = 0;
+
+	Всё, теперь переменная Test доступна везде, где подключен соответствующий *.h - файл.*/
+
 
 #include <PubSubClient.h>
 //#include <ESP8266WiFi.h> 

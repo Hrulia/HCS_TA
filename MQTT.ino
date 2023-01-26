@@ -45,6 +45,12 @@ Field2	cmdFromDevice	—ообщение от устройства клиентам.
 //clientId = JDoNBwwsCR8pHwkrJyQoDRo
 //password = WQT4X4x3l99+sr932ZiDiNDr
 
+//MQTT client_3 (samsung smartphone dashboard )
+//username = BwYVOgYNAzcOIgkVEyoBFww
+//clientId = BwYVOgYNAzcOIgkVEyoBFww
+//password = WgpT+UP7odk6Nm/yFLp+2KHT
+
+
 
 #define MAX_TIME_CONNECT_TO_MQTT 30000	//ћаксимальное врем€ на ожидание подключени€ к брокеру, в мс
 /* удали, это угол поворота серво*/ //#define ANGLE_FIELD 0   

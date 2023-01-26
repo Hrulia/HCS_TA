@@ -7,7 +7,7 @@
 
 //Channel Tonshaevo
 unsigned long ThingSpeakChannelNumber;// = 1287359; //Номер канала Tonshaevo_HCS на сайте ThingSpeak \\последняя цифра 9/0
-const char * ThingSpeakWriteAPIKey = "8JCE0XOM858Q9P7O";
+const char * ThingSpeakWriteAPIKey = "8JCE0XOM858Q9P7O"; 
 
 //Включить отладочный вывод 
 #define DEBUG_ThS
