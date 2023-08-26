@@ -7,38 +7,40 @@
 
 //Channel Tonshaevo
 unsigned long ThingSpeakChannelNumber;// = 1287359; //Номер канала Tonshaevo_HCS на сайте ThingSpeak \\последняя цифра 9/0
-const char * ThingSpeakWriteAPIKey = "8JCE0XOM858Q9P7O";
-
-// always include thingspeak header file after other header files and custom macros
-#include <ThingSpeak.h>	
+const char * ThingSpeakWriteAPIKey = "8JCE0XOM858Q9P7O"; 
 
 //Включить отладочный вывод 
 #define DEBUG_ThS
 
+// always include thingspeak header file after other header files and custom macros
+#include <ThingSpeak.h>	
+
 WiFiClient  clientThingSpeak;
 
 void initThingSpeak() {
+	Serial.println("\nThingSpeak initialization");
 	ThingSpeak.begin(clientThingSpeak);
-	#ifdef DEBUG_ThS
-		DEBUGLN("module ThingSpeak started.");
-	#endif
 }
 
 // Write one [value] to Field [item] of a ThingSpeak Channel
 int ThingSpeakWriteField(int item, float value, int channelNumber, char* writeAPIKey, int optionParametr) {
 	int httpCode = ThingSpeak.writeField(channelNumber, item, value, writeAPIKey);
-	#ifdef DEBUG_ThS
-		if (httpCode == 200) {
-			DEBUG("Channel " + String(item) + " write successful.");
-		}
-		else {
-			DEBUG("Problem writing to channel "+ String(item)+", HTTP error " + String(httpCode));
-		}
-	#endif
+
+#ifdef DEBUG_ThS
+	if (httpCode == 200) {
+		Serial.println("Channel " + String(item) + " write successful.");
+	}
+	else {
+		Serial.println("Problem writing to channel " + String(item) + ", HTTP error " + String(httpCode));
+	}
+#endif
+	return 0;
 }
+
 
 //Запись нескольких значений  о температурах на сайт ThingSpeak одновременно
 int ThingSpeakWriteItems(float *value ) {
+	///Serial.println("********************************************************************************");
 	//{ 0x28, 0x18, 0x07, 0x40, 0x04, 0x00, 0x00, 0xCB },  // [0]- t1, подача cистемы
 	//{ 0x28, 0x4D, 0xF7, 0xBF, 0x04, 0x00, 0x00, 0x43 },  // [1]- t2, обратка системы
 	//{ 0x28, 0x18, 0x07, 0x40, 0x04, 0x00, 0x00, 0xCB },  // [2]- t3, отвод трехходового крана ТТК
@@ -76,11 +78,11 @@ int ThingSpeakWriteItems(float *value ) {
 
 #ifdef DEBUG_ThS
 	if (httpCode == 200) {
-		DEBUGLN("ThingSpeak Channel update successful.");
+		Serial.println("ThingSpeak Channel update successful.");
 	}
 	else {
-		DEBUGLN("Problem updat ThingSpeak, HTTP error, code " + String(httpCode)+"");
+		Serial.println("Problem updat ThingSpeak, HTTP error, code " + String(httpCode)+"");
 	}
 #endif
-
+	return 0;
 }

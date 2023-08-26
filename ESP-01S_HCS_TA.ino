@@ -3,57 +3,28 @@
  Created:	02.01.2021 11:23:52
  Author:	Sergey
 */
-/*
-Характеристики:
-Напряжение питания: 3.3V (2.5-3.6V)
-Ток потребления: 300 мА при запуске и передаче данных, 35 мА во время работы, 80 мА в режиме точки доступа
-Максимальный ток пина – 12 мА.
-Flash память (память программы): 1 МБ
-Flash память (файловое хранилище): 1-16 МБ в зависимости от модификации
-EEPROM память: до 4 кБ
-SRAM память: 82 кБ
-Частота ядра: 80/160 МГц
-GPIO: 11 пинов
-ШИМ: 10 пинов
-Прерывания: 10 пинов
-АЦП: 1 пин
-I2C: 1 штука (программный, пины можно назначить любые)
-I2S: 1 штука
-SPI: 1 штука
-UART: 1.5 штуки
-WiFi связь
-*/
-/*
-При старте контроллера почти все пины делают скачок до высокого уровня, подробнее – в этой статье https://rabbithole.wwwdotorg.org/2017/03/28/esp8266-gpio.html. Единственными “спокойными” пинами являются D1 (GPIO5) и D2 (GPIO4). Если контроллер управляет напрямую какими-то железками (реле, транзистор, или является “кнопкой” для другого устройства), то лучше использовать именно эти пины!
-На этих же пинах сидит I2C, но шину можно переназначить на любые другие пины через Wire.begin(sda, scl).
-*/
-/* info:
-https://alexgyver.ru/lessons/esp8266/
-https://wikihandbk.com/wiki/ESP8266:Прошивки/Arduino/Библиотеки/Библиотека_ESP8266WiFi/Класс_станции
-https://kit.alexgyver.ru/tutorials-category/telegram/ //телеграмм бот
-https://wikihandbk.com/wiki/ESP8266:Модули/Плата_HUZZAH_ESP8266_от_Adafruit //служедные функции контактов при запуске
 
-Serial.setDebugOutput(true);  //включение вывода диагностической информации
-WiFi.printDiag(Serial);       //вывод диагностики в сериал
+/*//!!!! как нужно добавлять файлы cpp и h в проект  https://arduinoprosto.ru/q/61634/neskolko-faylov-ino-v-odnom-eskize
 
-*/
+в *.h - файле:
+	extern byte Test;
 
-//=====================================================
-// Для обмена по UART с модулем MEGA на данный момент пока используется тотже Serial1, который идет на USB.
-// но у esp8266 есть еще один UART, вот только буфер у них общий, поэтому нужно переключаться с одного на другой 
-// функцией Serial.swap() и при этом, на всякий случай, еще чистим буфер функцией Serial.flush() 
-// подробнее тут: https://esp8266.ru/forum/threads/zachem-polzovatsja-kostylem-softserial-kogda-u-esp8266-dva-apparatnyx-uart.4749/
-//
+в *.cpp - файле:
+	byte Test = 0;
+
+	Всё, теперь переменная Test доступна везде, где подключен соответствующий *.h - файл.*/
+
 
 #include <PubSubClient.h>
-#include <ESP8266WiFi.h>  
+//#include <ESP8266WiFi.h> 
+#include <ESP8266WebServer.h>
 
 //подключаем мои файлы .h и .cpp
 #include "myCycle.h"
-#include "ESP8266_wifi.h"
+
 
 //включение отладки в основном модуле программы
-#define DEBUG_MAIN
+//#define DEBUG_MAIN
 
 #ifdef DEBUG_MAIN
 	#define DEBUG(x) (Serial.print(x))
@@ -65,64 +36,114 @@ WiFi.printDiag(Serial);       //вывод диагностики в сериал
 	#define DEBUGR(x,r) 
 #endif // DEBUG_MAIN
 
-//#define MESS(mess) (Serial.print("?esplog="+String(mess))) // Командa логирования модулем mega сообщения от esp
 
-//////задаем интерфейс, через который отправляем команды модулю MEGA
-////#define UART_TO_MEGALN(x) (Serial.println(x))
+#define MAX_SERIAL_REQ  50		//
+#define NUMBER_OF_DS18B20 18	//Number of sensor DS18B20 (16) + датчик температуры дыма (1) + текущая целевая температура (1)
+#define MEGA_SERIAL Serial			//Serial port for communication with MEGA
 
-#define MAX_SERIAL_REQ  50 //
-#define NUMBER_OF_DS18B20 18 //Number of sensor DS18B20 (16) + датчик температуры дыма (1) + текущая целевая температура (1)
+//Перечисления для параметров работы системы
+enum sysParam{ ERR, ON, OFF, AUTO, OPEN, CLOSE, MYALG, PID};
+String sysParamString[8] = { "Err","On", "Off", "Auto", "Open", "Close", "myAlg", "PID" }; //отображает имена элементов sysParam
 
+///time_t SystemTime = 0; //esp system time
+
+/* настройка пинов */
+//#define PIN_RESET_MEGA D1 //пин генерации сигнала сброса для модуля MEGA
+
+
+
+
+//global variables
+float temperatures[(NUMBER_OF_DS18B20)];	//Массив температур датчиков DS18B20 
+int SysParametrs[6];											//arrey system (in MEGA) parameters and variables
+/* 
+[0] - BoilerPumpMode				//1 - on, 2 - off, 3 - auto
+[1] - SystemPumpMode				//1 - on, 2 - off, 3 - auto
+[2] - SysTempControlMode		//6 – мой алгоритм регулирования, 7 - PID регулятор
+[3] - DoorAirMode						//4 - open, 5 - close, 3 - auto
+[4] - reserved
+[5] - reserved
+
+*/
+
+/* Watch dog for Mega */
 // mega partner. Флаги состояния подключенного модуля Mega
 #define MEGA_OFF 0
 #define MEGA_ON  1
-
-//настройка пинов
-//#define PIN_RESET_MEGA D1 //пин генерации сигнала сброса для модуля MEGA
-
-myCycle cycleRequestTemperature(MS_01M, true);			// 1м запрос температуры
-//myCycle cycleRequestTargetTemperature(120000, true);			// 2м запрос текущей целевой температуры с учетом суточного расписания
-myCycle cycleSendingDataToThingSpeak(MS_05M, true);	// 5м цикл отправки данных о температуре на сайт IoT
-myCycle cycleCheckMegaAndESP(MS_03M, true);				//3мин цикл отправки в mega через serial команды своего присутствия: ?esp=1
-
-float temperatures[(NUMBER_OF_DS18B20)]; //Массив температур датчиков DS18B20 
-
 byte mega = MEGA_OFF;
 unsigned long megaTimer = millis(); //Таймер проверки состояния подключенного модуля Mega
 
 
-//параметры MQTT сервера
+/* Параметры MQTT сервера */
 extern long writeChannelID;				//ID канала ThingSpeak для записи через MQTT сервер
 extern int fieldsToPublish[8];    // Change to allow multiple fields.
 extern float dataToPublish[8];    // Holds your field data.
 
 
+/* Initial Timers */
+myCycle cycleRequestTemperature(MS_01M, true);			// 2м, 1м, 5с(mega зависала, видимо от частых запросов и переполнения буфера) 30 запрос температуры
+myCycle cycleRequestSystemParameters(MS_10S, true);  // 3м, 30c, запрос параметров работы системы.
+//myCycle cycleRequestTargetTemperature(120000, true);			// 2м запрос текущей целевой температуры с учетом суточного расписания
+myCycle cycleSendingDataToThingSpeak(MS_05M, true);	// 5м цикл отправки данных о температуре на сайт IoT
+myCycle cycleCheckMegaAndESP(MS_03M, true);				//3мин цикл отправки в mega через serial команды своего присутствия: ?esp=1
+myCycle cycleMegaTimeSynchronization(MS_30M, true);				// 1час цикл отправки команды синхронизации времени в мегу.
 
+
+/*****************************************************/
 void setup() {
 	//Serial.setRxBufferSize(500); // по умолчанию в ESP 256 Байт
-	Serial.begin(115200);
+	Serial.begin(9600);
 	//Serial.swap(); // GPIO15/D8 (TX) и GPIO13/D7 (RX)
 	//Serial.setTimeout(250);
 
+	// информация о контроллере
+	Serial.println("");
+	Serial.println("ESP8266 board info:");
+	Serial.print("\tChip ID: ");
+	Serial.println(ESP.getFlashChipId());
+	Serial.print("\tCore Version: ");
+	Serial.println(ESP.getCoreVersion());
+	Serial.print("\tChip Real Size: ");
+	Serial.println(ESP.getFlashChipRealSize());
+	Serial.print("\tChip Flash Size: ");
+	Serial.println(ESP.getFlashChipSize());
+	Serial.print("\tChip Flash Speed: ");
+	Serial.println(ESP.getFlashChipSpeed());
+	Serial.print("\tChip Speed: ");
+	Serial.println(ESP.getCpuFreqMHz());
+	Serial.print("\tChip Mode: ");
+	Serial.println(ESP.getFlashChipMode());
+	Serial.print("\tSketch Size: ");
+	Serial.println(ESP.getSketchSize());
+	Serial.print("\tSketch Free Space: ");
+	Serial.println(ESP.getFreeSketchSpace());
 
 	WiFi_init();
 	initThingSpeak();//Клиент передачи данных на сервер ThingSpeak
 	initMQTT();
+	initWebServer(); //
+	initNTP();
 
 	//настраиваем выход для сброса модуля MEGA
 	//pinMode(PIN_RESET_MEGA, OUTPUT);
 	//digitalWrite(PIN_RESET_MEGA, HIGH);
 
 	//моргание диодиком на плате, что бы видеть, что плата не зависла
-	//pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(LED_BUILTIN, OUTPUT);
 	
 	//Начальное значение таймера проверки состояния подключенного модуля Mega
 	byte mega = MEGA_OFF;
-	megaTimer = millis(); 
+	megaTimer = millis();
 }
 unsigned long timeBlink = millis();
 
+/*********************************************/
 void loop() {
+	// Web-server listen for HTTP requests from clients
+	checkWebClient();
+
+	workClock(); //работа NTP модуля
+
 	//проверка поступления данных на порт Serial от модуля Mega
 	checkSerial(); //проверяем как можно чаще
 
@@ -132,7 +153,6 @@ void loop() {
 	//Запрос данных о всех температурах из модуля MEGA
 	if (cycleRequestTemperature.check()) {
 		RequestTemperature();
-		// перезапуск таймера вызова функции.
 		cycleRequestTemperature.reStart();
 	}
 									////Запрос данных о текущей целевой температуре с учетом расписания
@@ -146,27 +166,37 @@ void loop() {
 	//отправки данных о температуре на сайт ThingSpeak (не чаще раза в 15 секунд)
 	if (cycleSendingDataToThingSpeak.check()) {
 		ThingSpeakWriteItems(temperatures);
-		// перезапуск таймера вызова функции.
 		cycleSendingDataToThingSpeak.reStart();
 	}
 
 	// отпарвки команды своего присутствия на Mega через Serial
 	if (cycleCheckMegaAndESP.check()) {
-		//Проверка нормального функционирования модуля MEGA.
-		checkMegaAndESP();  
-		// перезапуск таймера вызова функции.
+		checkMegaAndESP();  		//Проверка нормального функционирования модуля MEGA.
 		cycleCheckMegaAndESP.reStart();
 	}
-	//delay(30000);
-	///Publish();
+
+	//запрос параметров работы системы отопления
+	if (cycleRequestSystemParameters.check()) {
+		RequestSystemParameters(); //запро параметров работы системы
+		cycleRequestSystemParameters.reStart();
+	}
+
+	//отправки команды синхронизации времени в мегу	
+	if (cycleMegaTimeSynchronization.check()) {
+		SendActualTime(); //Отправка в Mega точного времени
+		cycleMegaTimeSynchronization.reStart();
+	}
 }
 
+
+/*******************************************************************************************/
+/*******************************************************************************************/
 /*******************************************************************************************/
 
 //Запрос информации о температуре с модуля MEGA
 void RequestTemperature() {
 	//запрос к меге на передачу всех значений температуры 
-	Serial.println("?reqesttemp=A");
+	Serial.println(F("?reqesttemp=A"));
 }
 
 ////Запрос информации о текущей целевой температуре с учетом расписания с модуля MEGA
@@ -174,149 +204,13 @@ void RequestTemperature() {
 //	Serial.println("?reqestTargetTemp");
 //}
 
-
-//=============================== -- Обработка поступившей по UART информации от модуля MEGA -- ===========================
-bool sFlag = true;
-String serialReq = "";
-//проверяем поступили-ли данные в порт Serial
-void checkSerial() {
-
-	///MESS(F("checkSerial\n"));
-	while (Serial.available() > 0) {
-		///MESS(F("Serial availeble\n"));
-		if (sFlag) {
-			///MESS(F("If sFlag\n"));
-			serialReq = "";
-			sFlag = false;
-		}
-		char c = Serial.read();
-		///MESS(F("read c ")); MESS(c); MESS(F("\n"));
-		if (c == 10) { // '\n'
-			///MESS(F("c==10\n"));
-			sFlag = true;
-			parseSerialStr();
-		}
-		else if (c == 13) { //'\r'
-			// skip
-		}
-		else {
-			if (serialReq.length() < MAX_SERIAL_REQ) {
-
-				serialReq += c;
-				///MESS(F("SerialMess: ")); MESS(serialReq); MESS(F("\n"));
-				//Serial.println("serialReq: "+String(serialReq));
-			}
-		}
-	} // while (Serial.available() > 0
-} // checkSerial()
-
-//Разбор строки, поступившей в Serial, выделение строки с командой
-void parseSerialStr() {
-	if (serialReq[0] == '?') {
-		///MESS(F("serialReq[0] == '?', call parseSerialCmd\n"));
-		parseSerialCmd();
-	}
-	else {
-		///DEBUGLN("ESP[" + serialReq + "]");  //выводим, то, что пришло в порт 
-	}
-}
-
-//Парсинг команды, поступившей в Serial и ее обработка
-void parseSerialCmd() {
-	//DEBUGLN(F("parseSerialCmd"));
-	String command, parameter;
-	if (serialReq.indexOf(F("?")) >= 0) {
-		int pBegin = serialReq.indexOf(F("?")) + 1;
-		if (serialReq.indexOf(F("=")) >= 0) {
-			int pParam = serialReq.indexOf(F("="));
-			command = serialReq.substring(pBegin, pParam);
-			parameter = serialReq.substring(pParam + 1);
-		}
-		else {
-			command = serialReq.substring(pBegin);
-			parameter = "";
-		}
-		/*DEBUG(F("command/parameter: "));
-		DEBUG(command);
-		DEBUG(F("/"));
-		DEBUGLN(parameter);*/
-
-	//============ Разбор поступивших команд =============
-		
-	//***** ?mega
-		if (command == F("mega")) {																	
-			 //MEGA прислала подтверждение, что работает
-			if (parameter == F("1")) {
-				mega = MEGA_ON; 
-				megaTimer = millis(); //сбросим таймер выявление зависания модуля MEGA
-				DEBUGLN(F("Confirmation received: MEGA - working!"));
-			}
-		}
-
-	//***** ?sendtempХ              ?sendtemp=1.23;5.78;33,33;7,77
-		else if (command.substring(0, 8) == F("sendtemp")) {												
-																													
-			//  ! Ошибка в этой функции!!! Не понятно как обрабатывает несколько значений!!!
-
-
-			/*  Эта процедура обрабатывает сразу все температуры одной строкой с разделителем';'
-				/*int iparam2 = parameter2.toFloat();
-				приём float чисел через сериал
-				десятичный разделитель - . (точка)
-				разделитель - ; (семиколон)*//*
-			//parameter// содержит последовательность значений температур через разделитель
-			int n = 0; //String buf_1="";
-			while (parameter.length() > 0) {
-				byte dividerIndex = parameter.indexOf(';');   // ищем индекс разделителя
-				String buf_1 = parameter.substring(0, dividerIndex);    // создаём строку с первым числом
-				temperatures[n] = buf_1.toFloat();
-				parameter = parameter.substring(dividerIndex + 1);   // остаток строки
-				n++;
-				}*/
-			int index = command.substring(8).toInt();
-			temperatures[index] = parameter.toFloat();
-			DEBUGLN("temp " + command.substring(8) +": " + String(temperatures[index]) + "");
-		}
-
-	// ?test 
-		else if (command == F("test")) {//Команда для проверки работы функции обработки в ESP													// ?test
-			Serial.println("Put command test");
-		}
-
-	// ?reqestrssi
-		else if (command == F("reqestrssi")) {//Запрос уровня сигнала wi-fi
-			Serial.print("?sendrssi=");
-			Serial.println((long)WiFi.RSSI());
-		}
-
-	// ?sendGTargetTemp
-		else if (command == F("sendGTargetTemp")) {//Передача от MEGA значения глобальной целевой температуры системы, без учета расписания
-			/*DEBUGLN*/Serial.println("The global target temperature is obtained: "+ parameter);
-			//Отправляем на сервер MQTT в field3 (GTargetTemp)
-			dataToPublish[2]= parameter.toFloat();
-			fieldsToPublish[0] = 0; //field1 will be rec
-			fieldsToPublish[1] = 0; //...
-			fieldsToPublish[2] = 1;
-			fieldsToPublish[3] = 0;
-			fieldsToPublish[4] = 0;
-			fieldsToPublish[5] = 0;
-			fieldsToPublish[6] = 0;
-			fieldsToPublish[7] = 0;
-
-			mqttPublish(writeChannelID, dataToPublish, fieldsToPublish);
-		}	
-	} 
-} // parseSerialCmd()
-//============================================================================
-
-
 //Контроль работы модуля mega и отправка сигнала своего ESP присутствия 
 void checkMegaAndESP() {
 	//Отправка модулю MEGA информации о своем нормальном функционировании 
-	Serial.println(F("?esp=1"));
+	MEGA_SERIAL.println(F("?esp=1"));
 
 	//Проверяем как долго от модуля mega не поступала информации о его присутствии. Не реже раза в 3 минуты
-	if ((millis() - megaTimer) > 180000) {
+	if ((millis() - megaTimer) > 180000UL) {
 		mega = MEGA_OFF; 
 		megaTimer = millis();
 		//делаем reset MEGA
@@ -326,3 +220,8 @@ void checkMegaAndESP() {
 		//digitalWrite(PIN_RESET_MEGA, HIGH);
 	}
 }	// cheсkMegaAndESP() 
+
+//запрос к меге на передачу значений внутренних параметров 
+void RequestSystemParameters() {
+	MEGA_SERIAL.println(F("?getSystemParameters"));
+}

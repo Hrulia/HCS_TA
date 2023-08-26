@@ -45,6 +45,12 @@ Field2	cmdFromDevice	Сообщение от устройства клиентам.
 //clientId = JDoNBwwsCR8pHwkrJyQoDRo
 //password = WQT4X4x3l99+sr932ZiDiNDr
 
+//MQTT client_3 (samsung smartphone dashboard )
+//username = BwYVOgYNAzcOIgkVEyoBFww
+//clientId = BwYVOgYNAzcOIgkVEyoBFww
+//password = WgpT+UP7odk6Nm/yFLp+2KHT
+
+
 
 #define MAX_TIME_CONNECT_TO_MQTT 30000	//Максимальное время на ожидание подключения к брокеру, в мс
 /* удали, это угол поворота серво*/ //#define ANGLE_FIELD 0   
@@ -111,9 +117,10 @@ void MQTTloop() {
 */
 void mqttSubscriptionCallback(char* topic, byte* payload, unsigned int mesLength) {
 	//сохраняем сообщение, полученное с сервера брокера во временную переменную.
+	//char r[22];
 	char p[mesLength + 1];
 	memcpy(p, payload, mesLength);
-	p[mesLength] = NULL; 
+	//p[mesLength] = NULL; 
 
 	DEBUGLN_MQTT("New message in topic. Length: " + String(mesLength));
 	DEBUGLN_MQTT("Topic " + String(topic));
@@ -135,7 +142,7 @@ void mqttSubscriptionCallback(char* topic, byte* payload, unsigned int mesLength
 	//на запись новой целевой температуры
 	if (f>=20 && f<=26)
 	{
-		delay(15000);
+		/*/////убрал, когда искал причину зависаний  */ delay(15000);
 		Serial.println("?SetGTargetTemp=" + String(f));
 		DEBUGLN_MQTT("Target temperature sent to MEGA");
 	}
@@ -164,7 +171,7 @@ void mqttConnect()
 			// See https://pubsubclient.knolleary.net/api.html#state for the failure code explanation.
 			DEBUGLN_MQTT(mqttClient.state());
 			DEBUGLN_MQTT(F(" Will try again in 5 seconds"));
-			delay(5000);
+			/*//убрал, когда искал причину зависаний */ delay(5000);
 		}
 	}
 }
