@@ -61,6 +61,7 @@ char mqttUserName[] = SECRET_MQTT_USERNAME;
 char mqttPass[] = SECRET_MQTT_PASSWORD;               // Change to your MQTT API key from Account > MyProfile.
 char clientID[] = SECRET_MQTT_CLIENT_ID;
 long readChannelID = 1627034; 
+
 long writeChannelID = 1627034;
 
 // Here's how to get ThingSpeak server fingerprint: https://www.a2hosting.com/kb/security/ssl/a2-hostings-ssl-certificate-fingerprints
