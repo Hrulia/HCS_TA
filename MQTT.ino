@@ -1,4 +1,7 @@
 /*Управление через MQTT брокера ThingSpeak
+info:
+https://www.mathworks.com/help/thingspeak/use-arduino-client-to-publish-to-a-channel.html
+
 Channel ID: 1627034
 Параметры брокера MQTT для канала:
 Регистрационные данные для устройства:
@@ -12,30 +15,39 @@ https://ww2.mathworks.cn/help/thingspeak/mqtt-api.html?s_tid=CRUX_lftnav
 
 Используются следующие поля:
 Field1	cmdFromClient	Запрос, команда от клиентского приложения к устройству
-Field2	cmdFromDevice	Сообщение от устройства клиентам.
+Field3	cmdFromDevice	Сообщение от устройства клиентам.
 */
 
 //#include <PubSubClient.h>
 
-//#define DEBUGMQTT //включить вывод отладочной информации
-#ifdef DEBUGMQTT
-	#define DEBUG_MQTT(x) (Serial.print(x))
-	#define DEBUGLN_MQTT(x) (Serial.println(x))
-	#define DEBUGR_MQTT(x,r) (Serial.print(x,r))
+//включить режим отладки
+//#define DEBUG_ENABLE_MQTT 
+
+#ifdef DEBUG_ENABLE_MQTT
+	#define DEBUG_PRINT_MQTT(x) (Serial.print(x))
+	#define DEBUG_PRINTLN_MQTT(x) (Serial.println(x))
+	#define DEBUGR_PRINTR_MQTT(x,r) (Serial.print(x,r))
 #else
-	#define DEBUG_MQTT(x) 
-	#define DEBUGLN_MQTT(x)
-	#define DEBUGR_MQTT(x,r) 
+#define DEBUG_PRINT_MQTT(x)
+#define DEBUG_PRINTLN_MQTT(x) 
+#define DEBUGR_PRINTR_MQTT(x,r)
 #endif 
 
-//MQTT клиент 1 
-//Device_Tonshaevo_HCS_MQTT
- #define SECRET_MQTT_USERNAME "KjMLOiQ0FyYiGDwDHwIkACA"
- #define SECRET_MQTT_CLIENT_ID "KjMLOiQ0FyYiGDwDHwIkACA"
- #define SECRET_MQTT_PASSWORD "5IcKiXd+RpWddVPe7FPJ/tHJ"
+//MQTT Devices для устройства системы
+#ifdef DEBUG_ENABLE_MQTT
+	//Test Device_Tonshaevo_HCS_MQTT	//MQTT  Используем для тестирования на другом тестовом устройстве
+	#define SECRET_MQTT_USERNAME "EwI2ODYwFwk4NTwXHyMQIzg"
+	#define SECRET_MQTT_CLIENT_ID "EwI2ODYwFwk4NTwXHyMQIzg"
+	#define SECRET_MQTT_PASSWORD "aDDjpR+kcCrxeozB6hpZ1JE/"
+#else
+	//Device_Tonshaevo_HCS_MQTT
+	#define SECRET_MQTT_USERNAME "KjMLOiQ0FyYiGDwDHwIkACA"
+	#define SECRET_MQTT_CLIENT_ID "KjMLOiQ0FyYiGDwDHwIkACA"
+	#define SECRET_MQTT_PASSWORD "5IcKiXd+RpWddVPe7FPJ/tHJ"
+#endif
 
 //MQTT клиент 2 
-//Client_1_Tonshaevo_HCS_MQTT (Используем эти данные для внешних программ управления устройством)
+//Client_1_Tonshaevo_HCS_MQTT (Используем эти данные для внешних программ управления устройством. На ноуте MQTTX)
 	//#define SECRET_MQTT_USERNAME "NzcPKAglLDs0GBEZAgkdGxA"
 	//#define SECRET_MQTT_CLIENT_ID "NzcPKAglLDs0GBEZAgkdGxA"
 	//#define SECRET_MQTT_PASSWORD "SfsDtwgOib0Nm+8CYCFystjb"
@@ -45,30 +57,33 @@ Field2	cmdFromDevice	Сообщение от устройства клиентам.
 //clientId = JDoNBwwsCR8pHwkrJyQoDRo
 //password = WQT4X4x3l99+sr932ZiDiNDr
 
-//MQTT client_3 (samsung smartphone dashboard )
+//MQTT client_3 (MyXiaomi)
 //username = BwYVOgYNAzcOIgkVEyoBFww
 //clientId = BwYVOgYNAzcOIgkVEyoBFww
-//password = WgpT+UP7odk6Nm/yFLp+2KHT
-
+//password = nqq5tkA6Qpnbl+UxQ4fAYAjc
 
 
 #define MAX_TIME_CONNECT_TO_MQTT 30000	//Максимальное время на ожидание подключения к брокеру, в мс
-/* удали, это угол поворота серво*/ //#define ANGLE_FIELD 0   
-#define DATA_FIELD 1										// Data field to post the signal strength to.
 
-const char* server = "mqtt3.thingspeak.com";
 char mqttUserName[] = SECRET_MQTT_USERNAME;
 char mqttPass[] = SECRET_MQTT_PASSWORD;               // Change to your MQTT API key from Account > MyProfile.
 char clientID[] = SECRET_MQTT_CLIENT_ID;
 long readChannelID = 1627034; 
-
 long writeChannelID = 1627034;
 
 // Here's how to get ThingSpeak server fingerprint: https://www.a2hosting.com/kb/security/ssl/a2-hostings-ssl-certificate-fingerprints
 // const char* thingspeak_server_fingerprint = "27 18 92 dd a4 26 c3 07 09 b9 7a e6 c5 21 b9 5b 48 f7 16 e1";//for SSL
 
-WiFiClient client;																	// Initialize the Wi-Fi client library. Uncomment for nonsecure connection.																							 //WiFiClientSecure client;                              // Uncomment for secure connection.  
-PubSubClient mqttClient(client);                    // Initialize the PubSubClient library.
+// Initialize the Wi-Fi client library.
+WiFiClient client;							// Uncomment for nonsecure connection.	
+/*WiFiClientSecure client;*/    // Uncomment for secure connection.  
+
+//Define connection parameters and initialize a PubSubClient instance.
+const char* server = "mqtt3.thingspeak.com";
+int status = WL_IDLE_STATUS;
+long lastPublishMillis = 0;
+int updateInterval = 15;
+PubSubClient mqttClient(client);                 
 
 int fieldsToPublish[8] = { 1,1,0,0,0,0,0,0 };       // Change to allow multiple fields.
 float dataToPublish[8];                             // Holds your field data.
@@ -76,11 +91,10 @@ float dataToPublish[8];                             // Holds your field data.
 
 //Настройка MQTT клиента
 void initMQTT() {
-
-	mqttClient.setServer(server, 1883);								// Set the MQTT broker details, nonsecure port. Uncomment for nonsecure connection.
+	mqttClient.setServer(server, 1883);						// Set the MQTT broker details, nonsecure port. Uncomment for nonsecure connection.
 	//mqttClient.setServer( server, 8883 );           // Set the MQTT broker details, secure port. Uncomment for secure connection.
 	mqttClient.setCallback(mqttSubscriptionCallback); // Set the MQTT message handler function.
-	DEBUGLN_MQTT("module MQTT initialization");
+	DEBUG_PRINTLN_MQTT("Module MQTT initialization");
 }
 
 //Создание и поддерживает активным соединение с сервером(брокером) MQTT
@@ -91,7 +105,7 @@ void MQTTloop() {
 		
 		//подписываемся на необходимые топики
 		if (mqttSubscribe(readChannelID, 1, 0) == 1) { //cmdFromClient - field 1	
-			DEBUGLN_MQTT("Subscribed field 1 cmdFromClient");
+			DEBUG_PRINTLN_MQTT("Subscribed field 1 cmdFromClient");
 		}
 	}
 
@@ -123,9 +137,9 @@ void mqttSubscriptionCallback(char* topic, byte* payload, unsigned int mesLength
 	memcpy(p, payload, mesLength);
 	//p[mesLength] = NULL; 
 
-	DEBUGLN_MQTT("New message in topic. Length: " + String(mesLength));
-	DEBUGLN_MQTT("Topic " + String(topic));
-	DEBUGLN_MQTT("Message: " + String(p));
+	DEBUG_PRINTLN_MQTT("New message in topic. Length: " + String(mesLength));
+	DEBUG_PRINTLN_MQTT("Topic " + String(topic));
+	DEBUG_PRINTLN_MQTT("Message: " + String(p));
 	//пока мы подписаны только на один топик field 1, поэтому определять с какого топика пришло сообщение не нужно.
 
 
@@ -145,10 +159,10 @@ void mqttSubscriptionCallback(char* topic, byte* payload, unsigned int mesLength
 	{
 		/*/////убрал, когда искал причину зависаний  */ delay(15000);
 		Serial.println("?SetGTargetTemp=" + String(f));
-		DEBUGLN_MQTT("Target temperature sent to MEGA");
+		DEBUG_PRINTLN_MQTT("Target temperature sent to MEGA");
 	}
 	else {
-		DEBUGLN_MQTT("Target temperature outside the permissible range");
+		DEBUG_PRINTLN_MQTT("Target temperature outside the permissible range");
 	}
 }
 
@@ -161,17 +175,17 @@ void mqttConnect()
 	{
 		///DEBUGLN_MQTT(String(mqttUserName) + " , " + mqttPass + " , " + clientID);
 		// Connect to the MQTT broker.
-		DEBUGLN_MQTT(F("Attempting MQTT connection..."));
+		DEBUG_PRINTLN_MQTT(F("Attempting MQTT connection..."));
 		if (mqttClient.connect(clientID, mqttUserName, mqttPass))
 		{
-			DEBUGLN_MQTT("Connected to MQTT with Client ID:  " + String(clientID) + " User " + String(mqttUserName) + " Pwd " + String(mqttPass));
+			DEBUG_PRINTLN_MQTT("Connected to MQTT with Client ID:  " + String(clientID) + " User " + String(mqttUserName) + " Pwd " + String(mqttPass));
 		}
 		else
 		{
-			DEBUG_MQTT(F("Failed connected to MQTT client, return state = "));
+			DEBUG_PRINTLN_MQTT(F("Failed connected to MQTT client, return state = "));
 			// See https://pubsubclient.knolleary.net/api.html#state for the failure code explanation.
-			DEBUGLN_MQTT(mqttClient.state());
-			DEBUGLN_MQTT(F(" Will try again in 5 seconds"));
+			DEBUG_PRINTLN_MQTT(mqttClient.state());
+			DEBUG_PRINTLN_MQTT(F(" Will try again in 5 seconds"));
 			/*//убрал, когда искал причину зависаний */ delay(5000);
 		}
 	}
@@ -197,8 +211,8 @@ int mqttSubscribe(long subChannelID, int field, int unsubSub) {
 		myTopic = "channels/" + String(subChannelID) + "/subscribe/fields/field" + String(field);
 	}
 
-	DEBUG_MQTT("Subscribing to " + myTopic + " ");
-	DEBUGLN_MQTT("State= " + String(mqttClient.state())+String(", if 0 then it is MQTT_CONNECTED"));  // 0 : MQTT_CONNECTED - the client is connected
+	DEBUG_PRINT_MQTT("Subscribing to " + myTopic + " ");
+	DEBUG_PRINTLN_MQTT("State= " + String(mqttClient.state())+String(", if 0 then it is MQTT_CONNECTED"));  // 0 : MQTT_CONNECTED - the client is connected
 
 	if (unsubSub == 1) {
 		return mqttClient.unsubscribe(myTopic.c_str());
@@ -253,7 +267,7 @@ void mqttPublish(long pubChannelID, float dataArray[], int fieldArray[]) {
 	}
 
 	Serial.println(dataString);
-	DEBUGLN_MQTT(dataString);
+	DEBUG_PRINTLN_MQTT(dataString);
 
 	// Create a topic string and publish data to ThingSpeak channel feed.
 	String topicString = "channels/" + String(pubChannelID) + "/publish";

@@ -24,11 +24,20 @@ onStationModeDisconnected() – эта функция вызывается, когда станция отключается 
 
 #define MAX_CONNECT_TIME 40000//Максимальное время на ожидание подключения к Wi-fi, в мс
 
-//const char* ssid = "DIR-300";
-//const char* password = "Hrulia+7";
-
+//Define connection parameters
 const char* ssid = "HUAWEI-EE5E";//type your ssid
 const char* password = "62429292";//type your password
+int connectionDelay = 1;
+
+// Параметры для Wi-fi в режиме точка доступа // 05.01.24 отключена функция поднятия точки AP при отсутствии подключения к роутеру. Но введена постоянная проверка подключения и переподключение в случае необходимости.
+/*const char* ssidAP = "HCS_Tonshaevo";
+const char* passwordAP = NULL;
+const IPAddress ipAP = IPAddress(192,168,10,1);*/
+
+
+//Для разных сетей
+//const char* ssid = "DIR-300";
+//const char* password = "Hrulia+7";
 
 //const char* ssid = "MSN";//type your ssid
 //const char* password = "22222233";//type your password
@@ -39,60 +48,109 @@ const char* password = "62429292";//type your password
 //const char* ssid = "TP-Link_56A9";     // Название Вашей WiFi сети
 //const char* password = "40555096";// Пароль от Вашей WiFi сети
 
-// Параметры для Wi-fi в режиме точка доступа 
-const char* ssidAP = "HCS_Tonshaevo";
-const char* passwordAP = NULL;
-const IPAddress apIP = IPAddress(192,168,10,1);
-
-
 
 //WiFiClient  wifi_client;
 
-	// Connect or reconnect to WiFi
-int WiFi_init() {
-	//serializeJsonPretty(wifinet, Serial);  //просто копирнул откуда-то
-
-	DEBUGLN_WF("\nConnecting to: "+String(ssid)+"");
+// Connect to WiFi.
+void connectWifi(){//serializeJsonPretty(wifinet, Serial);  //просто копирнул откуда-то
+	DEBUGLN_WF(F("Connecting to Wi-Fi: ") + String(ssid));
+	digitalWrite(LED_BUILTIN, HIGH);
 	WiFi.mode(WIFI_STA); //необязательно, если до этого режим работы не изменялся
 	//WiFi.setPhyMode(WIFI_PHY_MODE_11N);
-	WiFi.begin(ssid, password); // Connect to WPA/WPA2 network. Change this line if using open or WEP network
-	unsigned long start = millis();
 
-	while ((WiFi.status() != WL_CONNECTED) && ((millis() - start)<MAX_CONNECT_TIME)) {//ждем соединения
-		DEBUG_WF(".");
-			delay(500);
+	// Loop until WiFi connection is successful
+	while (WiFi.waitForConnectResult(MAX_CONNECT_TIME) != WL_CONNECTED) {
+		WiFi.begin(ssid, password);
+		//мигнем встроенным диодиком во время задержки
+		digitalWrite(LED_BUILTIN, LOW);
+		delay(connectionDelay * 1000);
+		digitalWrite(LED_BUILTIN, HIGH);
+		DEBUGLN_WF(F("WiFi.status: ") + String(WiFi.status()));
 	}
-	if (WiFi.status() != WL_CONNECTED) { // Если не удалось подключиться запускаем в режиме AP
-		DEBUGLN_WF("WiFi up AP. IP 192.168.10.1");
-		StartAPMode();
-	}
-	else {
-		DEBUGLN_WF("WiFi connected");
-		delay(500);
-		DEBUG_WF("Connected to ");  //  "Подключились к "
-		DEBUGLN_WF(ssid);
-		DEBUG_WF("Password  ");  //  "Пароль точки доступа"
-		DEBUGLN_WF(password);
-		DEBUG_WF("IP address: ");  //  "IP-адрес: "
-		DEBUGLN_WF(WiFi.localIP());
-		DEBUG_WF("RSSI = ");
-		DEBUGLN_WF(WiFi.RSSI());
-		/*DEBUGLN_WF("RSSI = " + String(WiFi.RSSI()) + "");*/
-	}
-	return 0;
-} 
+	DEBUG_WF(F("WiFi connected to "));  //  "Подключились к "
+	DEBUGLN_WF(ssid);
+	DEBUG_WF(F("Password "));  //  "Пароль точки доступа"
+	DEBUGLN_WF(password);
+	DEBUG_WF(F("IP address: "));  //  "IP-адрес: "
+	DEBUGLN_WF(WiFi.localIP());
+	DEBUG_WF(F("RSSI = "));
+	DEBUGLN_WF(WiFi.RSSI());
+}
 
+// Reconnect to WiFi if it gets disconnected.
+void checkWiFiConnect() {
+	DEBUGLN_WF(F("WiFi.status(3): ") + String(WiFi.status()));
+	if (WiFi.status() != WL_CONNECTED) {
+		connectWifi();
+	}
+}
+
+/*
 void StartAPMode() {
 	WiFi.disconnect(); // Отключаем WIFI
-	WiFi.softAPdisconnect(); // отключаем отчку доступа(если она была)
+	WiFi.softAPdisconnect(true); // отключаем отчку доступа(если она была)
 	WiFi.mode(WIFI_OFF); // отключаем WIFI
 	delay(500);
 
 	// Меняем режим на режим точки доступа
 	WiFi.mode(WIFI_AP);
 	// Задаем настройки сети
-	WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+	WiFi.softAPConfig(ipAP, ipAP, IPAddress(255, 255, 255, 0));
 	// Включаем WIFI в режиме точки доступа с именем и паролем
 	// хронящихся в переменных ssidAP passwordAP
 	WiFi.softAP(ssidAP, passwordAP);
 }
+*/
+
+/*
+typedef enum {
+WL_NO_SHIELD        = 255,   // for compatibility with WiFi Shield library
+WL_IDLE_STATUS      = 0,
+WL_NO_SSID_AVAIL    = 1,
+WL_SCAN_COMPLETED   = 2,
+WL_CONNECTED        = 3,
+WL_CONNECT_FAILED   = 4,
+WL_CONNECTION_LOST  = 5,
+WL_WRONG_PASSWORD   = 6,
+WL_DISCONNECTED     = 7
+} wl_status_t;
+*/
+
+
+// можно удалить
+/*
+// Connect or reconnect to WiFi
+int initWifi() {
+//serializeJsonPretty(wifinet, Serial);  //просто копирнул откуда-то
+
+DEBUGLN_WF(F("\nConnecting to: ")+String(ssid)+F(""));
+WiFi.mode(WIFI_STA); //необязательно, если до этого режим работы не изменялся
+//WiFi.setPhyMode(WIFI_PHY_MODE_11N);
+WiFi.begin(ssid, password); // Connect to WPA/WPA2 network. Change this line if using open or WEP network
+unsigned long start = millis();
+
+while ((WiFi.status() != WL_CONNECTED) && ((millis() - start)<MAX_CONNECT_TIME)) {//ждем соединения
+DEBUG_WF(".");
+delay(500);
+}
+if (WiFi.status() != WL_CONNECTED) {
+// Если не удалось подключиться запускаем в режиме AP
+DEBUGLN_WF(F("WiFi up AP. IP 192.168.10.1"));
+StartAPMode();
+}
+else {
+DEBUGLN_WF(F("WiFi connected"));
+delay(500);
+DEBUG_WF(F("Connected to "));  //  "Подключились к "
+DEBUGLN_WF(ssid);
+DEBUG_WF(F("Password "));  //  "Пароль точки доступа"
+DEBUGLN_WF(password);
+DEBUG_WF(F("IP address: "));  //  "IP-адрес: "
+DEBUGLN_WF(WiFi.localIP());
+DEBUG_WF(F("RSSI = "));
+DEBUGLN_WF(WiFi.RSSI());
+//DEBUGLN_WF("RSSI = " + String(WiFi.RSSI()) + "");
+	}
+	return 0;
+} 
+*/

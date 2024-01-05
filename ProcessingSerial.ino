@@ -5,7 +5,18 @@
 // подробнее тут: https://esp8266.ru/forum/threads/zachem-polzovatsja-kostylem-softserial-kogda-u-esp8266-dva-apparatnyx-uart.4749/
 //
 
+//включение отладки в модуле программы
+#define DEBUG_ENABLE_PS
 
+#ifdef DEBUG_ENABLE_PS
+#define DEBUG_PRINT_PS(x) (Serial.print(x))
+#define DEBUG_PRINTLN_PS(x) (Serial.println(x))
+#define DEBUGR_PRINTR_PS(x,r) (Serial.print(x,r))
+#else
+#define DEBUG_PRINT_PS(x) 
+#define DEBUG_PRINTLN_PS(x) 
+#define DEBUGR_PRINTR_PS(x,r) 
+#endif // DEBUG_ENABLE_PS
 
 
 //=============================== -- ќбработка поступившей по UART информации от модул€ MEGA -- ===========================
@@ -69,7 +80,7 @@ void parseSerialCmd() {
 			if (parameter == F("1")) {
 				mega = MEGA_ON;
 				megaTimer = millis(); //сбросим таймер вы€вление зависани€ модул€ MEGA
-				DEBUGLN(F("Confirmation received: MEGA - working!"));
+				DEBUG_PRINTLN_PS(F("Confirmation received: MEGA - working!"));
 			}
 		}
 
@@ -94,7 +105,7 @@ void parseSerialCmd() {
 			}*/
 			int index = command.substring(8).toInt();
 			temperatures[index] = parameter.toFloat();
-			DEBUGLN("temp " + command.substring(8) + ": " + String(temperatures[index]) + "");
+			DEBUG_PRINTLN_PS("temp " + command.substring(8) + ": " + String(temperatures[index]) + "");
 		}
 
 //**********

@@ -16,7 +16,7 @@
 #define MS_01M     60000
 #define MS_03M    180000
 #define MS_05M    300000
-#define MS_30M    180000
+#define MS_30M   1800000
 #define MS_01H   3600000
 #define MS_06H  21600000
 #define MS_12H  43200000
@@ -24,17 +24,18 @@
 
 class myCycle {
   private:
-    bool          _go;
-    bool          _active;
-    unsigned long _start;
-    unsigned long _period;
+    bool          _go;			//флаг сработки таймера
+    bool          _active;	//активирован или нет таймер
+    unsigned long _start;		
+    unsigned long _period;	//период таймера	
   
-  public:
-    myCycle(unsigned long per, bool act);
+  public:  
+    myCycle(unsigned long per, bool act, bool go=false);
     void reInit(unsigned long per, bool act);
     void reStart();
     bool check();
     bool go();
+		void setGo(bool go);
     void clear();
     
     // active

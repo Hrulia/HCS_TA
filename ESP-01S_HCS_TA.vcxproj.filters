@@ -35,13 +35,7 @@
     <None Include="ProcessingSerial.ino" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__vm\.ESP-01S_HCS_TA.vsarduino.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="myCycle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="__vm\.HCS_TA_ESP-01S.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="__vm\.HCS_TA_ESP8266.vsarduino.h">

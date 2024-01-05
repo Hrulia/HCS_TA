@@ -4,21 +4,33 @@
 //	3. Number of channels - 4
 //	4. Private channel sharing - Limited to 3 shares
 
+//Включить отладочный вывод 
+#define DEBUG_ThSp 0
+
+//Включить передачу информации на отладочный номер канала 
+#define DEBUG_CHANNEL 1
 
 //Channel Tonshaevo
-unsigned long ThingSpeakChannelNumber;// = 1287359; //Номер канала Tonshaevo_HCS на сайте ThingSpeak \\последняя цифра 9/0
-const char * ThingSpeakWriteAPIKey = "8JCE0XOM858Q9P7O"; 
+#if DEBUG_CHANNEL
+	// 
+	unsigned long ThingSpeakChannelNumber = 1269753;					//ThingSpeak test cannel
+	const char * ThingSpeakWriteAPIKey = "O0M4AN3HW1CUW1PE";	
+#else
+	unsigned long ThingSpeakChannelNumber = 1287359;					//Номер канала Tonshaevo_HCS на сайте ThingSpeak
+	const char * ThingSpeakWriteAPIKey = "8JCE0XOM858Q9P7O";		
 
-//Включить отладочный вывод 
-#define DEBUG_ThS
+#endif // DEBUG_CHANNEL
+
+
 
 // always include thingspeak header file after other header files and custom macros
 #include <ThingSpeak.h>	
 
+
 WiFiClient  clientThingSpeak;
 
 void initThingSpeak() {
-	Serial.println("\nThingSpeak initialization");
+	Serial.println("ThingSpeak initialization");
 	ThingSpeak.begin(clientThingSpeak);
 }
 
@@ -26,7 +38,7 @@ void initThingSpeak() {
 int ThingSpeakWriteField(int item, float value, int channelNumber, char* writeAPIKey, int optionParametr) {
 	int httpCode = ThingSpeak.writeField(channelNumber, item, value, writeAPIKey);
 
-#ifdef DEBUG_ThS
+#if DEBUG_ThSp
 	if (httpCode == 200) {
 		Serial.println("Channel " + String(item) + " write successful.");
 	}
@@ -69,20 +81,21 @@ int ThingSpeakWriteItems(float *value ) {
 	ThingSpeak.setField(8, value[17]);
 
 	// set the status
-	String myStatus = String("Data on temperatures sent successfully <sistem time>");
+	String myStatus = "Data send " + ntp.timeString() +" " + ntp.dateString();
 	ThingSpeak.setStatus(myStatus);
 
 	// write to the ThingSpeak channel
 	int httpCode = ThingSpeak.writeFields(ThingSpeakChannelNumber, ThingSpeakWriteAPIKey);
 
 
-#ifdef DEBUG_ThS
+#if DEBUG_ThSp
 	if (httpCode == 200) {
 		Serial.println("ThingSpeak Channel update successful.");
 	}
 	else {
-		Serial.println("Problem updat ThingSpeak, HTTP error, code " + String(httpCode)+"");
+		Serial.println("Problem update ThingSpeak. HTTP error. Code " + String(httpCode)+"");
 	}
 #endif
+
 	return 0;
 }

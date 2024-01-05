@@ -1,8 +1,8 @@
 #include "myCycle.h"
 #include <Arduino.h>
 
-myCycle::myCycle(unsigned long per, bool act) {
-  _go     = false;
+myCycle::myCycle(unsigned long per, bool act, bool go) {
+  _go     = go;
   _active = act;
   _period = per;
   _start  = millis();
@@ -36,6 +36,11 @@ bool myCycle::check() {
 
 bool myCycle::go() {
   return _go;
+}
+
+void myCycle::setGo(bool go)
+{ //установка флага сработки таймера
+	_go = true;
 }
 
 void myCycle::clear() {
