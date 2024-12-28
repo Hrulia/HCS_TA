@@ -25,16 +25,16 @@ GyverNTP ntp(3); // параметры по умолчанию (GMT 0, период обновления 3600 секунд
 void initNTP() {
 	DEBUG_PRINTLN_NTP(F("start procedure initNTP"));
 
-#ifdef DEBUG_ENABLE_NTP
-	DEBUG_PRINTLN_NTP(F("ntp.status: ") + String(ntp.status()));
-	DEBUG_PRINTLN_NTP(F("ntp.synced: ") + String(ntp.synced()));
-	bool status = ntp.begin();
-	DEBUG_PRINTLN_NTP(F("ntp.begin(): ") + String(status));
-	DEBUG_PRINTLN_NTP(F("ntp.status: ") + String(ntp.status()));
-	DEBUG_PRINTLN_NTP(F("ntp.synced: ") + String(ntp.synced()));
-#else
-	ntp.begin();
-#endif 
+	#ifdef DEBUG_ENABLE_NTP
+		DEBUG_PRINTLN_NTP(F("ntp.status: ") + String(ntp.status()));
+		DEBUG_PRINTLN_NTP(F("ntp.synced: ") + String(ntp.synced()));
+		bool status = ntp.begin();
+		DEBUG_PRINTLN_NTP(F("ntp.begin(): ") + String(status));
+		DEBUG_PRINTLN_NTP(F("ntp.status: ") + String(ntp.status()));
+		DEBUG_PRINTLN_NTP(F("ntp.synced: ") + String(ntp.synced()));
+	#else
+		ntp.begin();
+	#endif 
 
 	//ntp.setHost(char* host);       // установить хост (по умолч. "pool.ntp.org")
 	// список серверов, если "pool.ntp.org" не работает
@@ -43,22 +43,17 @@ void initNTP() {
 	//"ntp.msk-ix.ru"
 
 	//синхронизируем часы принудительно
-#ifdef DEBUG_ENABLE_NTP
-	uint8_t ret = ntp.updateNow(); //!!! какая-то ошибка у алекса. Функция не всегда возвращает статус
-	delay(1);
-	DEBUG_PRINTLN_NTP(F("ntp.updateNow(): ") + String(ret));
-	DEBUG_PRINTLN_NTP(F("ntp.status: ") + String(ntp.status()));
-	DEBUG_PRINTLN_NTP(F("ntp.synced: ") + String(ntp.synced()));
-#else
-	ntp.updateNow();
-	delay(1);
-#endif
-
-	//////////отправим точное время на модуль mega
-	///////////Serial.println(ntp.synced());
-
-	////////SendActualTime();
-
+	#ifdef DEBUG_ENABLE_NTP
+		uint8_t ret = ntp.updateNow(); //!!! какая-то ошибка у алекса. Функция не всегда возвращает статус
+		delay(1);
+		DEBUG_PRINTLN_NTP(F("ntp.updateNow(): ") + String(ret));
+		DEBUG_PRINTLN_NTP(F("ntp.status: ") + String(ntp.status()));
+		DEBUG_PRINTLN_NTP(F("ntp.synced: ") + String(ntp.synced()));
+	#else
+		ntp.updateNow();
+		delay(100);
+	#endif
+}	
 	//статусы системы status():
 	// 0 - всё ок
 	// 1 - не запущен UDP
@@ -67,7 +62,7 @@ void initNTP() {
 	// 4 - ошибка отправки пакета
 	// 5 - таймаут ответа сервера
 	// 6 - получен некорректный ответ сервера
-}
+
 
 //обновление времени по своему внутреннему таймеру
 void ntpClockWork() {

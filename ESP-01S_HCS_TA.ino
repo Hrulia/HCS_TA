@@ -15,7 +15,7 @@
 	Всё, теперь переменная Test доступна везде, где подключен соответствующий *.h - файл.*/
 
 
-#include <PubSubClient.h>
+//#include <PubSubClient.h>
 //#include <ESP8266WiFi.h> 
 #include <ESP8266WebServer.h>
 
@@ -25,7 +25,7 @@
 /* Оформление отладки как у Алекса Гайвера*/
 
 //включение отладки в основном модуле программы
-#define DEBUG_ENABLE_MAIN
+//#define DEBUG_ENABLE_MAIN
 
 #ifdef DEBUG_ENABLE_MAIN
 	#define DEBUG_PRINT_MAIN(x) (Serial.print(x))
@@ -65,17 +65,19 @@ int SysParametrs[6];											// system (in MEGA) parameters and variables arra
 */
 
 /* Watch dog for Mega */
-// mega partner. Флаги состояния подключенного модуля Mega
+// mega partner.
+#define PIN_RESET_MEGA 12 //вывод ESP для сброса меги
+//Флаги состояния подключенного модуля Mega
 #define MEGA_OFF 0
 #define MEGA_ON  1
-byte mega = MEGA_OFF;
+byte mega = MEGA_OFF; //начальная установка флага присутствия МЕГИ
 unsigned long megaTimer = millis(); //Таймер проверки состояния подключенного модуля Mega
 
 
 /* Параметры MQTT сервера */
 extern long writeChannelID;				//ID канала ThingSpeak для записи через MQTT сервер
-extern int fieldsToPublish[8];    // Change to allow multiple fields.
-extern float dataToPublish[8];    // Holds your field data.
+//extern int fieldsToPublish[8];    // Change to allow multiple fields.
+// float dataToPublish[8];    // Holds your field data.
 
 
 
@@ -83,8 +85,8 @@ extern float dataToPublish[8];    // Holds your field data.
 myCycle cycleRequestTemperature(MS_01M, true);					// 2м, 1м, 5с(mega зависала, видимо от частых запросов и переполнения буфера) 30 запрос температуры
 myCycle cycleRequestSystemParameters(MS_20S, true);			// 3м, 30c, запрос параметров работы системы.
 //myCycle cycleRequestTargetTemperature(120000, true);	// 2м запрос текущей целевой температуры с учетом суточного расписания
-myCycle cycleSendingDataToThingSpeak(MS_05M, true);			// 5м цикл отправки данных о температуре на сайт ThingSpeak. Ограничение: не чаще раза в 15 секунд.
-myCycle cycleCheckMegaAndESP(MS_03M, true);							//3мин цикл отправки в mega через serial команды своего присутствия: ?esp=1
+myCycle cycleSendingDataToThingSpeak(MS_05M, true,true);			// 5м цикл отправки данных о температуре на сайт ThingSpeak. Ограничение: не чаще раза в 15 секунд.
+myCycle cycleCheckMegaAndESP(MS_01M, true);							//3мин цикл отправки в mega через serial команды своего присутствия: ?esp=1
 myCycle cycleMegaTimeSynchronization(MS_30M, true,true);			// 1час цикл отправки команды синхронизации времени в мегу.
 
 
@@ -92,7 +94,8 @@ myCycle cycleMegaTimeSynchronization(MS_30M, true,true);			// 1час цикл отправки
 void setup() {
 	//Serial.setRxBufferSize(500); // по умолчанию в ESP 256 Байт
 	Serial.begin(9600);
-	DEBUG_PRINTLN_MAIN(F("\n*******   Start setup()   *******"));
+	Serial.println();
+	DEBUG_PRINTLN_MAIN(F("*******   Start setup()   *******"));
 	//Serial.swap(); // GPIO15/D8 (TX) и GPIO13/D7 (RX)
 	//Serial.setTimeout(250);
 	 
@@ -126,8 +129,8 @@ void setup() {
 
 	//Pins configuration
 	//настраиваем выход для сброса модуля MEGA
-	//pinMode(PIN_RESET_MEGA, OUTPUT);
-	//digitalWrite(PIN_RESET_MEGA, HIGH);
+	pinMode(PIN_RESET_MEGA, OUTPUT_OPEN_DRAIN);
+	digitalWrite(PIN_RESET_MEGA, HIGH);
 
 	//Пин встроенного светодиода на плате ESP8266
 	pinMode(LED_BUILTIN, OUTPUT);
@@ -141,7 +144,7 @@ void setup() {
 	initThingSpeak();
 
 	DEBUG_PRINTLN_MAIN(F("call initMQTT()"));
-	initMQTT();
+	//0//initMQTT();
 
 	DEBUG_PRINTLN_MAIN(F("call initWebServer()"));
 	initWebServer(); 
@@ -159,6 +162,10 @@ void loop() {
 	DEBUG_PRINTLN_MAIN(F("call checkWiFiConnect()"));
 	checkWiFiConnect();
 
+	//Проверка и поддержание связи с сервером mqtt и подписки на топики, проверка поступления новых сообщений от MQTT брокера
+	DEBUG_PRINTLN_MAIN(F("call mqttloop()"));
+	//1//mqttloop();
+
 	// Web-server listen for HTTP requests from clients
 	DEBUG_PRINTLN_MAIN(F("call checkWebClient()"));
 	checkWebClient();
@@ -171,11 +178,7 @@ void loop() {
 	DEBUG_PRINTLN_MAIN(F("call checkSerial()"));
 	checkSerial(); //проверяем как можно чаще
 
-	//Поддержание связи и подписка на топики, проверка поступления новых сообщений от MQTT брокера
-	DEBUG_PRINTLN_MAIN(F("call MQTTloop()"));
-	MQTTloop();
-
-
+	
 /*************************************************/
 /*   процедуры вызываемые по сработке таймеров   */
 /*************************************************/
@@ -205,7 +208,7 @@ void loop() {
 		cycleSendingDataToThingSpeak.reStart();
 	}
 
-	// отпарвки команды своего присутствия на Mega через Serial
+	// отпарвки команды своего присутствия на Mega через Serial и проверка не зависла ли мега
 	if (cycleCheckMegaAndESP.check()) {
 		DEBUG_PRINTLN_MAIN(F("call checkMegaAndESP()"));
 		checkMegaAndESP();  		//Проверка нормального функционирования модуля MEGA.
@@ -224,7 +227,11 @@ void loop() {
 	DEBUG_PRINTLN_MAIN(F("call blinkBuiltInLed()"));
 	blinkBuiltInLed();
 
-	DEBUG_PRINTLN_MAIN(F("******* End loop()"));
+
+	//тестируем mqtt
+	//2//mqttTest();
+
+	DEBUG_PRINTLN_MAIN(F("*******   End loop()"));
 } //end loop()
 
 
@@ -247,16 +254,15 @@ void RequestTemperature() {
 void checkMegaAndESP() {
 	//Отправка модулю MEGA информации о своем нормальном функционировании 
 	SERIAL_TO_MEGA.println(F("?esp=1"));
-
-	//Проверяем как долго от модуля mega не поступала информации о его присутствии. Не реже раза в 3 минуты
-	if ((millis() - megaTimer) > 180000UL) {
+	//Проверяем как долго от модуля mega не поступала информации о его присутствии. за 3 минуты должен поступить сигнал присутствия
+	if ((millis() - megaTimer) > 180000UL) {//180000UL
 		mega = MEGA_OFF; 
 		megaTimer = millis();
 		//делаем reset MEGA
 		DEBUG_PRINTLN_MAIN(F("Module MEGA reseting"));
-		//digitalWrite(PIN_RESET_MEGA, LOW);
-		//delay(300);
-		//digitalWrite(PIN_RESET_MEGA, HIGH);
+		digitalWrite(PIN_RESET_MEGA, LOW);
+		delay(100);
+		digitalWrite(PIN_RESET_MEGA, HIGH);
 	}
 }	// cheсkMegaAndESP() 
 
@@ -273,4 +279,5 @@ void blinkBuiltInLed() {
 	static bool flag;
 	digitalWrite(LED_BUILTIN, flag);
 	flag = !flag;
+	delay(300);
 }

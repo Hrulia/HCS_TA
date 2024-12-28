@@ -80,7 +80,7 @@ void parseSerialCmd() {
 			if (parameter == F("1")) {
 				mega = MEGA_ON;
 				megaTimer = millis(); //сбросим таймер вы€вление зависани€ модул€ MEGA
-				DEBUG_PRINTLN_PS(F("Confirmation received: MEGA - working!"));
+				DEBUG_PRINTLN_PS(F("Received from MEGA - working!"));
 			}
 		}
 
@@ -126,7 +126,7 @@ void parseSerialCmd() {
 		else if (command == F("sendGTargetTemp")) {//ѕередача от MEGA значени€ глобальной целевой температуры системы, без учета расписани€
 			///*DEBUGLN*/Serial.println("The global target temperature is obtained: " + parameter);
 			//ќтправл€ем на сервер MQTT в field3 (GTargetTemp)
-			dataToPublish[2] = parameter.toFloat();
+			/*dataToPublish[2] = parameter.toFloat();
 			fieldsToPublish[0] = 0; //field1 will be rec
 			fieldsToPublish[1] = 0; //...
 			fieldsToPublish[2] = 1;
@@ -134,9 +134,9 @@ void parseSerialCmd() {
 			fieldsToPublish[4] = 0;
 			fieldsToPublish[5] = 0;
 			fieldsToPublish[6] = 0;
-			fieldsToPublish[7] = 0;
+			fieldsToPublish[7] = 0;*/
 
-			mqttPublish(writeChannelID, dataToPublish, fieldsToPublish);
+			//mqttPublish(writeChannelID, dataToPublish, fieldsToPublish);
 		}
 		//**********
 		// ?sendSystemParameters=XYZK

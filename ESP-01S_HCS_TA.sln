@@ -5,6 +5,10 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ESP-01S_HCS_TA", "ESP-01S_HCS_TA.vcxproj", "{F93FF8F1-D953-4A17-A479-0E08E2481F2A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ESP8266WebServer", "C:\Users\Sergey\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\3.1.2\libraries\ESP8266WebServer\ESP8266WebServer.vcxitems", "{887E8771-CE70-4109-AF6A-AEE25D7ED6FA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ESP8266WiFi", "C:\Users\Sergey\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\3.1.2\libraries\ESP8266WiFi\ESP8266WiFi.vcxitems", "{7EA9E4A7-4A4C-4D4F-94BA-9C8FDB13852E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86

@@ -10,7 +10,8 @@ onStationModeDisconnected() – эта функция вызывается, когда станция отключается 
 #include <ESP8266WiFi.h>
 ///#include "ESP8266_wifi.h"
 
-#define DEBUGWF
+// Включение отладки в модуле
+//#define DEBUGWF
 #ifdef DEBUGWF
 	#define DEBUG_WF(x) (Serial.print(x))
 	#define DEBUGLN_WF(x) (Serial.println(x))
@@ -27,7 +28,7 @@ onStationModeDisconnected() – эта функция вызывается, когда станция отключается 
 //Define connection parameters
 const char* ssid = "HUAWEI-EE5E";//type your ssid
 const char* password = "62429292";//type your password
-int connectionDelay = 1;
+int connectionDelayWiFi = 1;
 
 // Параметры для Wi-fi в режиме точка доступа // 05.01.24 отключена функция поднятия точки AP при отсутствии подключения к роутеру. Но введена постоянная проверка подключения и переподключение в случае необходимости.
 /*const char* ssidAP = "HCS_Tonshaevo";
@@ -39,8 +40,8 @@ const IPAddress ipAP = IPAddress(192,168,10,1);*/
 //const char* ssid = "DIR-300";
 //const char* password = "Hrulia+7";
 
-//const char* ssid = "MSN";//type your ssid
-//const char* password = "22222233";//type your password
+//const char* ssid = "Redmi Note 11";//type your ssid
+//const char* password = "11111122";//type your password
 
 //char ssid[] = "TP-Link_56A9";		// your network SSID (name)
 //char password[] = "40555096";				// your network password
@@ -53,7 +54,7 @@ const IPAddress ipAP = IPAddress(192,168,10,1);*/
 
 // Connect to WiFi.
 void connectWifi(){//serializeJsonPretty(wifinet, Serial);  //просто копирнул откуда-то
-	DEBUGLN_WF(F("Connecting to Wi-Fi: ") + String(ssid));
+	Serial.println(F("Connecting to Wi-Fi: ") + String(ssid));
 	digitalWrite(LED_BUILTIN, HIGH);
 	WiFi.mode(WIFI_STA); //необязательно, если до этого режим работы не изменялся
 	//WiFi.setPhyMode(WIFI_PHY_MODE_11N);
@@ -63,18 +64,18 @@ void connectWifi(){//serializeJsonPretty(wifinet, Serial);  //просто копирнул от
 		WiFi.begin(ssid, password);
 		//мигнем встроенным диодиком во время задержки
 		digitalWrite(LED_BUILTIN, LOW);
-		delay(connectionDelay * 1000);
+		delay(connectionDelayWiFi * 1000);
 		digitalWrite(LED_BUILTIN, HIGH);
-		DEBUGLN_WF(F("WiFi.status: ") + String(WiFi.status()));
 	}
-	DEBUG_WF(F("WiFi connected to "));  //  "Подключились к "
-	DEBUGLN_WF(ssid);
-	DEBUG_WF(F("Password "));  //  "Пароль точки доступа"
-	DEBUGLN_WF(password);
-	DEBUG_WF(F("IP address: "));  //  "IP-адрес: "
-	DEBUGLN_WF(WiFi.localIP());
-	DEBUG_WF(F("RSSI = "));
-	DEBUGLN_WF(WiFi.RSSI());
+	Serial.println(F("WiFi.status(3) : ") + String(WiFi.status()));
+	Serial.print(F("WiFi connected to "));  //  "Подключились к "
+	Serial.println(ssid);
+	Serial.print(F("Password "));  //  "Пароль точки доступа"
+	Serial.println(password);
+	Serial.print(F("IP address: "));  //  "IP-адрес: "
+	Serial.println(WiFi.localIP());
+	Serial.print(F("RSSI = "));
+	Serial.println(WiFi.RSSI());
 }
 
 // Reconnect to WiFi if it gets disconnected.

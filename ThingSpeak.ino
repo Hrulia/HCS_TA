@@ -8,7 +8,7 @@
 #define DEBUG_ThSp 0
 
 //¬ключить передачу информации на отладочный номер канала 
-#define DEBUG_CHANNEL 1
+#define DEBUG_CHANNEL 0
 
 //Channel Tonshaevo
 #if DEBUG_CHANNEL
@@ -81,7 +81,7 @@ int ThingSpeakWriteItems(float *value ) {
 	ThingSpeak.setField(8, value[17]);
 
 	// set the status
-	String myStatus = "Data send " + ntp.timeString() +" " + ntp.dateString();
+	String myStatus = F("Data ") + ntp.timeString() + F(" ") + ntp.dateString() + F("Wi-Fi RSSI ") + String(WiFi.RSSI());
 	ThingSpeak.setStatus(myStatus);
 
 	// write to the ThingSpeak channel
